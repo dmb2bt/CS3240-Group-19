@@ -13,5 +13,6 @@ public class PilotPrototype {
 		driver.rotate(90);
 		System.out.println("Turning Right");
 		driver.rotate(-90);
+		System.out.println("Done");
 	}
 }
