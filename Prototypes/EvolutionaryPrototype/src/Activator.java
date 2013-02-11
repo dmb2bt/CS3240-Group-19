@@ -211,7 +211,7 @@ public class Activator extends Object {
 		if(cmd.length() <= 9){
 			return -1;
 		}else {
-			int ret = Integer.parseInt(cmd.substring(10));
+			int ret = Integer.parseInt(cmd.substring(9));
 			if (ret <= 0){
 				return -1;
 			}
