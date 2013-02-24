@@ -202,6 +202,14 @@ public class Activator extends Object {
 			pilot.rotate(90);
 		} else if (cmd.equalsIgnoreCase("turnLeft")) {
 			pilot.rotate(-90);
+		}else if (cmd.equalsIgnoreCase("right")){
+			pilot.rotateRight();
+		}else if (cmd.equalsIgnoreCase("left")){
+			pilot.rotateLeft();
+		}else if (cmd.equalsIgnoreCase("arc right")){
+			pilot.arcForward(90);
+		}else if (cmd.equalsIgnoreCase("arc left")){
+			pilot.arcForward(-90);
 		}
 		return output;
 
