@@ -1,8 +1,15 @@
+#Ignore files created by Eclipse
+################################
 .metadata/
 .classpath
+
+#Ignore IntelliJ generate files
+###############################
 .idea/
 *.iml
 
+#Ignore OS-generated files
+##########################
 .DS_Store
 .DS_Store?
 ._*
