@@ -170,9 +170,9 @@ public class TestController {
 		if (args.length < 1) {
 			return "";
 		} else {
-			if (args[0].equalsIgnoreCase("forward")) {
+			if (args[0].equalsIgnoreCase("forward") || args[0].equalsIgnoreCase("forwards")) {
 				command += "F";
-			} else if (args[0].equalsIgnoreCase("backward")) {
+			} else if (args[0].equalsIgnoreCase("backward") || args[0].equalsIgnoreCase("backwards")) {
 				command += "B";
 			}
 			if (args.length == 2) {
@@ -198,9 +198,9 @@ public class TestController {
 		if (args.length < 1) {
 			return "";
 		} else {
-			if (args[0].equalsIgnoreCase("forward")) {
+			if (args[0].equalsIgnoreCase("forward") || args[0].equalsIgnoreCase("forwards")) {
 				command += "F";
-			} else if (args[0].equalsIgnoreCase("backward")) {
+			} else if (args[0].equalsIgnoreCase("backward") || args[0].equalsIgnoreCase("backwards")) {
 				command += "B";
 			} else {
 				return "";
