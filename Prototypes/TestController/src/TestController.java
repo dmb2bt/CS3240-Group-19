@@ -11,10 +11,11 @@ import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 
 public class TestController {
-    private NXTComm connection;
+    private static NXTComm connection;
     private static boolean USBTest = false;
-    private NXTInfo[] info;
-    private long start, latency;
+    private static NXTInfo[] info;
+    private static long start;
+	private static long latency;
     static Boolean readFlag = true;
     static Object lock = new Object();
     private OutputStream os;
@@ -114,28 +115,28 @@ public class TestController {
         System.out.println("Ending session...");
     }
 
-    public String createCommand(String cmd) {
+    public static String createCommand(String cmd) {
         // TO DO: Create commands based on the input...
         String message = "";
         String[] cmdWords = cmd.split(" ");
         String command = getCommand(cmdWords);
         String[] args = getCommandArguments(cmdWords);
 
-        if (cmdWords.length > 1) {
+        if (cmdWords.length < 1) {
             return message;
         } else {
             if (command.equalsIgnoreCase("move")) {
-                message = createMoveCommand(cmdWords);
+                message = createMoveCommand(args);
             } else if (command.equalsIgnoreCase("arc")) {
-                message = createArcCommand(cmdWords);
+                message = createArcCommand(args);
             } else if (command.equalsIgnoreCase("turn")) {
-                message = createTurnCommand(cmdWords);
+                message = createTurnCommand(args);
             } else if (command.equalsIgnoreCase("stop")) {
                 message = createStopCommand();
             } else if (command.equalsIgnoreCase("setspeed")) {
-                message = createSetSpeedMessage();
+                message = createSetSpeedMessage(args);
             } else if (command.equalsIgnoreCase("read")) {
-                message = createReadSensorMessage();
+                message = createReadSensorMessage(args);
             } else if (command.equalsIgnoreCase("none")) {
                 message = createNoOpMessage();
             }
@@ -143,7 +144,7 @@ public class TestController {
         return message;
     }
 
-    public String[] getCommandArguments(String[] words) {
+    public static String[] getCommandArguments(String[] words) {
         String[] args = new String[words.length - 1];
         for (int i = 1; i < words.length; i++) {
             args[i - 1] = words[i];
@@ -151,106 +152,154 @@ public class TestController {
         return args;
     }
 
-    public String getCommand(String[] words) {
+    public static String getCommand(String[] words) {
         return words[0];
     }
 
-    public boolean isNumeric(String number) {
+    public static boolean isNumeric(String number) {
         try {
-            int i = Integer.parseDouble(number);
+            int i = Integer.parseInt(number);
         } catch (NumberFormatException nfe) {
             return false;
         }
         return true;
     }
 
-    public String createMoveCommand(String[] args) {
-        String command = "MS";
-        if (args.length < 1) {
-            return "";
-        } else {
-            if (args[0].equalsIgnoreCase("forward")) {
-                command += "F";
-            } else if (args[0].equalsIgnoreCase("backward")) {
-                command += "B";
-            }
-            if (args.length >= 2) {
-                if (isNumeric(args[1])) {
-                    command += args[1];
-                } else {
-                    return "";
-                }
-            } else {
-                command += "0000000";
-            }
-        }
-        return command;
-    }
+    public static String createMoveCommand(String[] args) {
+		String command = "MS";
+		if (args.length < 1) {
+			return "";
+		} else {
+			if (args[0].equalsIgnoreCase("forward")) {
+				command += "F";
+			} else if (args[0].equalsIgnoreCase("backward")) {
+				command += "B";
+			}
+			if (args.length == 2) {
+				if (isNumeric(args[1])) {
+					for(int i = 0; i < 7 - args[1].length(); i++){
+						command += "0";	
+					}
+					command += args[1];
+				} else {
+					return "";
+				}
+			} else if (args.length > 2){
+				return "";
+			} else {
+				command += "0000000";
+			}
+		}
+		return command;
+	}
 
-    public String createArcCommand(String[] args) {
-        String command = "MA";
-        if (args.length < 1) {
-            return "";
-        } else {
-            if (args[0].equalsIgnoreCase("forward")) {
-                command += "F";
-            } else if (args[0].equalsIgnoreCase("backward")) {
-                command += "B";
-            } else {
-                return "";
-            }
-            if (args.length >= 2){
-                if(args[1].equalsIgnoreCase("left")){
-                    command += "L";
-                } else if (args[1].equalsIgnoreCase("right")){
-                    command += "R";
-                } else {
-                    return "";
-                }
-            }
-            command += "090";
-            command += "000";
-        }
-        return command;
-    }
+	public static String createArcCommand(String[] args) {
+		String command = "MA";
+		if (args.length < 1) {
+			return "";
+		} else {
+			if (args[0].equalsIgnoreCase("forward")) {
+				command += "F";
+			} else if (args[0].equalsIgnoreCase("backward")) {
+				command += "B";
+			} else {
+				return "";
+			}
+			if (args.length >= 2) {
+				if (args[1].equalsIgnoreCase("left")) {
+					command += "L";
+				} else if (args[1].equalsIgnoreCase("right")) {
+					command += "R";
+				} else {
+					return "";
+				}
+			}
+			command += "090";
+			command += "000";
+		}
+		return command;
+	}
 
-    public String createTurnCommand(String[] args) {
-        String command = "TN";
-        if(args.length < 1){
-            return "";
-        } else {
-            if(args[0].equalsIgnoreCase("right")){
-                command += "R";
-            } else if (args[0].equalsIgnoreCase("left")){
-                command += "L";
-            } else {
-                return "";
-            }
-            if (args.length > 1){
-                if(2)
-            }
-        }
-    }
+	public static String createTurnCommand(String[] args) {
+		String command = "TN";
+		if (args.length < 1) {
+			return "";
+		} else {
+			if (args[0].equalsIgnoreCase("right")) {
+				command += "R";
+			} else if (args[0].equalsIgnoreCase("left")) {
+				command += "L";
+			} else {
+				return "";
+			}
+			if (args.length > 1) {
+				if (isNumeric(args[1])) {
+					for(int i = 0; i < 7 - args[1].length(); i++){
+						command += "0";	
+					}
+					command += args[1];
+				} else {
+					return "";
+				}
+			} else {
+				command += "0000000";
+			}
+		}
+		return command;
+	}
 
-    public String createStopCommand() {
-        return "ST00000000";
-    }
+	public static String createStopCommand() {
+		return "ST00000000";
+	}
 
-    public String createSetSpeedMessage(String[] args) {
+	public static String createSetSpeedMessage(String[] args) {
+		String command = "SS";
+		if (args.length != 2){
+			return "";
+		} else {
+			if(args[0].equalsIgnoreCase("a") || 
+					args[0].equalsIgnoreCase("b") || 
+					args[0].equalsIgnoreCase("c") || 
+					args[0].equalsIgnoreCase("d")){
+				command += args[0].toUpperCase();
+			} else {
+				return "";
+			}
+			if (isNumeric(args[1])) {
+				for(int i = 0; i < 7 - args[1].length(); i++){
+					command += "0";	
+				}
+				command += args[1];
+			} else {
+				return "";
+			}
+		}
+		return command;
+	}
 
-    }
+	public static String createReadSensorMessage(String[] args) {
+		String command = "";
+		if(args.length != 1){
+			return "";
+		}
+		if(args[0].equalsIgnoreCase("all")){
+			command = "RA00000000";
+		}else {
+			if(args[0].equalsIgnoreCase("u") || 
+					args[0].equalsIgnoreCase("t") || 
+					args[0].equalsIgnoreCase("m") || 
+					args[0].equalsIgnoreCase("l")){
+				command = "RS" + args[0].toUpperCase() + "0000000";
+			}
+		}
+		return command;
+	}
 
-    public String createReadSensorMessage(String[] args) {
+	public static String createNoOpMessage() {
+		return "0000000000";
+	}
 
-    }
-
-    public String createNoOpMessage() {
-        return "0000000000";
-    }
-
-    public String getCommandHelp() {
-        return "";
-    }
-
-
+	public static String getCommandHelp() {
+		return "";
+	}
 }
