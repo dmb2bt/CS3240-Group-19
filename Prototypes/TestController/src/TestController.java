@@ -299,7 +299,15 @@ public class TestController {
 		return "0000000000";
 	}
 
+    public static String createMalformedMessage() {
+        //TO DO: Create a string that does not correctly follow the protocol
+        return "";
+    }
+
 	public static String getCommandHelp() {
+        // TO DO: create text that will describe the various commands and how to enter them
 		return "";
 	}
+
+
 }
