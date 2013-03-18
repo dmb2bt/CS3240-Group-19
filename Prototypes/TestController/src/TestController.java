@@ -1,4 +1,4 @@
-gimport java.io.DataInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -301,13 +301,49 @@ public class TestController {
 
     public static String createMalformedMessage() {
         //TO DO: Create a string that does not correctly follow the protocol
-        return "";
+    	String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    	String[] commands = new String[8];
+    	commands[0] = "MSF0000000";
+    	commands[1] = "MAFL090000";
+    	commands[2] = "TNR0000000";
+    	commands[3] = "ST00000000";
+    	commands[4] = "SSA0000000";
+    	commands[5] = "RA00000000";
+    	commands[6] = "RSU0000000";
+    	commands[7] = "0000000000";
+    	int pick = (int)(Math.random() * commands.length);
+    	String rand = commands[pick];
+    	pick = (int)(Math.random() * rand.length());
+    	int replace = (int)(Math.random() * 26);
+    	String wrongString = "" + alpha.charAt(replace);
+    	String malformed = rand.substring(0, pick);
+    	malformed += wrongString;
+    	malformed += rand.substring(pick+1, rand.length());
+    	
+    	int size = (int)(Math.random() * 3);
+    	if(size == 0)
+    	{
+    		int length = (int)(Math.random() * 9 + 1);
+    		malformed = malformed.substring(0, length);
+    	}
+    	else if(size == 2)
+    	{
+    		int length = (int)(Math.random() * 255 + 1);
+    		for(int i = 0; i < length; i++);
+    		malformed += "0";
+    	}
+        return malformed;
     }
 
 	public static String getCommandHelp() {
         // TO DO: create text that will describe the various commands and how to enter them
-		return "";
-	}
-
-
+		return "To form each the commands follow the directions below.  Arguments are sepearated by spaces. Case does not matter." +
+		" \n\nMOVE:\tType: 'move [specify direction: forward or backward] [distance in cm]' \n\tFor example to move forward 120 cm, type: move forward 120" +
+		" \nARC:\tType: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\n\tFor example, to arc up and right, type: arc forward right" +
+		" \nTURN:\tType: 'turn [specify direction: right or left] [specify number of degrees to turn]" +
+		" \nSTOP:\tType: 'stop'" +
+		" \nSET SPEED:\tType: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [number of new speed].\n\t\tFor example to set motor a to speed 30 type: setspeed a 30" +
+		" \nREAD:\tType: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \n\tFor example to read information from the light sensor type: read l.  \n\tTo read information from all sensors type: read all" +
+		" \nNONE:\tTo create NoOp message type: none";
+}
 }
