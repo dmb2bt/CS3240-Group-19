@@ -15,7 +15,7 @@ public class TestController {
     private static boolean USBTest = false;
     private static NXTInfo[] info;
     private static long start;
-	private static long latency;
+    private static long latency;
     static Boolean readFlag = true;
     static Object lock = new Object();
     private OutputStream os;
@@ -61,7 +61,9 @@ public class TestController {
                         if (count > 0) {
                             String ret = (new String(buffer)).trim();
                             long l = System.currentTimeMillis() - start;
-                            System.out.printf("NXJ: %s [%dms]\n", ret, l);
+                            if(verifyCheckSum(ret)){
+                                System.out.printf("NXJ: %s [%dms]\n", ret, l);
+                            }
                         }
                         Thread.sleep(10);
                     } catch (IOException e) {
@@ -87,6 +89,7 @@ public class TestController {
                 } else {
                     start = System.currentTimeMillis();
                     String message = createCommand(input);
+                    message = message + getCheckSum(message);
                     if (message.equals("")) {
                         System.out.println("Maformed Input, try again.");
                     } else {
@@ -166,184 +169,205 @@ public class TestController {
     }
 
     public static String createMoveCommand(String[] args) {
-		String command = "MS";
-		if (args.length < 1) {
-			return "";
-		} else {
-			if (args[0].equalsIgnoreCase("forward") || args[0].equalsIgnoreCase("forwards")) {
-				command += "F";
-			} else if (args[0].equalsIgnoreCase("backward") || args[0].equalsIgnoreCase("backwards")) {
-				command += "B";
-			}
-			if (args.length == 2) {
-				if (isNumeric(args[1])) {
-					for(int i = 0; i < 7 - args[1].length(); i++){
-						command += "0";	
-					}
-					command += args[1];
-				} else {
-					return "";
-				}
-			} else if (args.length > 2){
-				return "";
-			} else {
-				command += "0000000";
-			}
-		}
-		return command;
-	}
+        String command = "MS";
+        if (args.length < 1) {
+            return "";
+        } else {
+            if (args[0].equalsIgnoreCase("forward") || args[0].equalsIgnoreCase("forwards")) {
+                command += "F";
+            } else if (args[0].equalsIgnoreCase("backward") || args[0].equalsIgnoreCase("backwards")) {
+                command += "B";
+            }
+            if (args.length == 2) {
+                if (isNumeric(args[1])) {
+                    for (int i = 0; i < 7 - args[1].length(); i++) {
+                        command += "0";
+                    }
+                    command += args[1];
+                } else {
+                    return "";
+                }
+            } else if (args.length > 2) {
+                return "";
+            } else {
+                command += "0000000";
+            }
+        }
+        return command;
+    }
 
-	public static String createArcCommand(String[] args) {
-		String command = "MA";
-		if (args.length < 1) {
-			return "";
-		} else {
-			if (args[0].equalsIgnoreCase("forward") || args[0].equalsIgnoreCase("forwards")) {
-				command += "F";
-			} else if (args[0].equalsIgnoreCase("backward") || args[0].equalsIgnoreCase("backwards")) {
-				command += "B";
-			} else {
-				return "";
-			}
-			if (args.length >= 2) {
-				if (args[1].equalsIgnoreCase("left")) {
-					command += "L";
-				} else if (args[1].equalsIgnoreCase("right")) {
-					command += "R";
-				} else {
-					return "";
-				}
-			}
-			command += "090";
-			command += "000";
-		}
-		return command;
-	}
+    public static String createArcCommand(String[] args) {
+        String command = "MA";
+        if (args.length < 1) {
+            return "";
+        } else {
+            if (args[0].equalsIgnoreCase("forward") || args[0].equalsIgnoreCase("forwards")) {
+                command += "F";
+            } else if (args[0].equalsIgnoreCase("backward") || args[0].equalsIgnoreCase("backwards")) {
+                command += "B";
+            } else {
+                return "";
+            }
+            if (args.length >= 2) {
+                if (args[1].equalsIgnoreCase("left")) {
+                    command += "L";
+                } else if (args[1].equalsIgnoreCase("right")) {
+                    command += "R";
+                } else {
+                    return "";
+                }
+            }
+            command += "090";
+            command += "000";
+        }
+        return command;
+    }
 
-	public static String createTurnCommand(String[] args) {
-		String command = "TN";
-		if (args.length < 1) {
-			return "";
-		} else {
-			if (args[0].equalsIgnoreCase("right")) {
-				command += "R";
-			} else if (args[0].equalsIgnoreCase("left")) {
-				command += "L";
-			} else {
-				return "";
-			}
-			if (args.length > 1) {
-				if (isNumeric(args[1])) {
-					for(int i = 0; i < 7 - args[1].length(); i++){
-						command += "0";	
-					}
-					command += args[1];
-				} else {
-					return "";
-				}
-			} else {
-				command += "0000000";
-			}
-		}
-		return command;
-	}
+    public static String createTurnCommand(String[] args) {
+        String command = "TN";
+        if (args.length < 1) {
+            return "";
+        } else {
+            if (args[0].equalsIgnoreCase("right")) {
+                command += "R";
+            } else if (args[0].equalsIgnoreCase("left")) {
+                command += "L";
+            } else {
+                return "";
+            }
+            if (args.length > 1) {
+                if (isNumeric(args[1])) {
+                    for (int i = 0; i < 7 - args[1].length(); i++) {
+                        command += "0";
+                    }
+                    command += args[1];
+                } else {
+                    return "";
+                }
+            } else {
+                command += "0000000";
+            }
+        }
+        return command;
+    }
 
-	public static String createStopCommand() {
-		return "ST00000000";
-	}
+    public static String createStopCommand() {
+        return "ST00000000";
+    }
 
-	public static String createSetSpeedMessage(String[] args) {
-		String command = "SS";
-		if (args.length != 2){
-			return "";
-		} else {
-			if(args[0].equalsIgnoreCase("a") || 
-					args[0].equalsIgnoreCase("b") || 
-					args[0].equalsIgnoreCase("c") || 
-					args[0].equalsIgnoreCase("d")){
-				command += args[0].toUpperCase();
-			} else {
-				return "";
-			}
-			if (isNumeric(args[1])) {
-				for(int i = 0; i < 7 - args[1].length(); i++){
-					command += "0";	
-				}
-				command += args[1];
-			} else {
-				return "";
-			}
-		}
-		return command;
-	}
+    public static String createSetSpeedMessage(String[] args) {
+        String command = "SS";
+        if (args.length != 2) {
+            return "";
+        } else {
+            if (args[0].equalsIgnoreCase("a") ||
+                    args[0].equalsIgnoreCase("b") ||
+                    args[0].equalsIgnoreCase("c") ||
+                    args[0].equalsIgnoreCase("d")) {
+                command += args[0].toUpperCase();
+            } else {
+                return "";
+            }
+            if (isNumeric(args[1])) {
+                for (int i = 0; i < 7 - args[1].length(); i++) {
+                    command += "0";
+                }
+                command += args[1];
+            } else {
+                return "";
+            }
+        }
+        return command;
+    }
 
-	public static String createReadSensorMessage(String[] args) {
-		String command = "";
-		if(args.length != 1){
-			return "";
-		}
-		if(args[0].equalsIgnoreCase("all")){
-			command = "RA00000000";
-		}else {
-			if(args[0].equalsIgnoreCase("u") || 
-					args[0].equalsIgnoreCase("t") || 
-					args[0].equalsIgnoreCase("m") || 
-					args[0].equalsIgnoreCase("l")){
-				command = "RS" + args[0].toUpperCase() + "0000000";
-			}
-		}
-		return command;
-	}
+    public static String createReadSensorMessage(String[] args) {
+        String command = "";
+        if (args.length != 1) {
+            return "";
+        }
+        if (args[0].equalsIgnoreCase("all")) {
+            command = "RA00000000";
+        } else {
+            if (args[0].equalsIgnoreCase("u") ||
+                    args[0].equalsIgnoreCase("t") ||
+                    args[0].equalsIgnoreCase("m") ||
+                    args[0].equalsIgnoreCase("l")) {
+                command = "RS" + args[0].toUpperCase() + "0000000";
+            }
+        }
+        return command;
+    }
 
-	public static String createNoOpMessage() {
-		return "0000000000";
-	}
+    public static String createNoOpMessage() {
+        return "0000000000";
+    }
 
     public static String createMalformedMessage() {
         //TO DO: Create a string that does not correctly follow the protocol
-    	String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    	String[] commands = new String[8];
-    	commands[0] = "MSF0000000";
-    	commands[1] = "MAFL090000";
-    	commands[2] = "TNR0000000";
-    	commands[3] = "ST00000000";
-    	commands[4] = "SSA0000000";
-    	commands[5] = "RA00000000";
-    	commands[6] = "RSU0000000";
-    	commands[7] = "0000000000";
-    	int pick = (int)(Math.random() * commands.length);
-    	String rand = commands[pick];
-    	pick = (int)(Math.random() * rand.length());
-    	int replace = (int)(Math.random() * 26);
-    	String wrongString = "" + alpha.charAt(replace);
-    	String malformed = rand.substring(0, pick);
-    	malformed += wrongString;
-    	malformed += rand.substring(pick+1, rand.length());
-    	
-    	int size = (int)(Math.random() * 3);
-    	if(size == 0)
-    	{
-    		int length = (int)(Math.random() * 9 + 1);
-    		malformed = malformed.substring(0, length);
-    	}
-    	else if(size == 2)
-    	{
-    		int length = (int)(Math.random() * 255 + 1);
-    		for(int i = 0; i < length; i++);
-    		malformed += "0";
-    	}
+        String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        String[] commands = new String[8];
+        commands[0] = "MSF0000000";
+        commands[1] = "MAFL090000";
+        commands[2] = "TNR0000000";
+        commands[3] = "ST00000000";
+        commands[4] = "SSA0000000";
+        commands[5] = "RA00000000";
+        commands[6] = "RSU0000000";
+        commands[7] = "0000000000";
+        int pick = (int) (Math.random() * commands.length);
+        String rand = commands[pick];
+        pick = (int) (Math.random() * rand.length());
+        int replace = (int) (Math.random() * 26);
+        String wrongString = "" + alpha.charAt(replace);
+        String malformed = rand.substring(0, pick);
+        malformed += wrongString;
+        malformed += rand.substring(pick + 1, rand.length());
+
+        int size = (int) (Math.random() * 3);
+        if (size == 0) {
+            int length = (int) (Math.random() * 9 + 1);
+            malformed = malformed.substring(0, length);
+        } else if (size == 2) {
+            int length = (int) (Math.random() * 255 + 1);
+            for (int i = 0; i < length; i++) ;
+            malformed += "0";
+        }
         return malformed;
     }
 
-	public static String getCommandHelp() {
+    public static String getCommandHelp() {
         // TO DO: create text that will describe the various commands and how to enter them
-		return "To form each the commands follow the directions below.  Arguments are sepearated by spaces. Case does not matter." +
-		" \n\nMOVE:\tType: 'move [specify direction: forward or backward] [distance in cm]' \n\tFor example to move forward 120 cm, type: move forward 120" +
-		" \nARC:\tType: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\n\tFor example, to arc up and right, type: arc forward right" +
-		" \nTURN:\tType: 'turn [specify direction: right or left] [specify number of degrees to turn]" +
-		" \nSTOP:\tType: 'stop'" +
-		" \nSET SPEED:\tType: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [number of new speed].\n\t\tFor example to set motor a to speed 30 type: setspeed a 30" +
-		" \nREAD:\tType: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \n\tFor example to read information from the light sensor type: read l.  \n\tTo read information from all sensors type: read all" +
-		" \nNONE:\tTo create NoOp message type: none";
-}
+        return "To form each the commands follow the directions below.  Arguments are sepearated by spaces. Case does not matter." +
+                " \n\nMOVE:\tType: 'move [specify direction: forward or backward] [distance in cm]' \n\tFor example to move forward 120 cm, type: move forward 120" +
+                " \nARC:\tType: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\n\tFor example, to arc up and right, type: arc forward right" +
+                " \nTURN:\tType: 'turn [specify direction: right or left] [specify number of degrees to turn]" +
+                " \nSTOP:\tType: 'stop'" +
+                " \nSET SPEED:\tType: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [number of new speed].\n\t\tFor example to set motor a to speed 30 type: setspeed a 30" +
+                " \nREAD:\tType: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \n\tFor example to read information from the light sensor type: read l.  \n\tTo read information from all sensors type: read all" +
+                " \nNONE:\tTo create NoOp message type: none";
+    }
+
+    public static String getCheckSum(String str) {
+        int sum = 0;
+        String ret;
+        byte[] buffer = str.getBytes();
+        for (int i = 0; i < buffer.length; i++) {
+            sum += (int) buffer[i];
+        }
+        sum = sum % 256;
+        byte[] checksum = new byte[1];
+        checksum[0] = (byte) sum;
+        ret = new String(checksum);
+        return ret;
+    }
+
+    public static boolean verifyCheckSum(String str){
+        if(str.length() == 11) {
+            byte[] string = str.getBytes();
+            if(getCheckSum(str.substring(0, 10)).equals(str.substring(10))){
+                return true;
+            }
+        }
+        return false;
+    }
 }
