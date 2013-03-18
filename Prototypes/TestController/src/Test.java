@@ -17,7 +17,8 @@ public class Test {
                 } else if (message.length() < 10){
                 	System.out.println("Message length is too short to be correct!");
                 } else {
-    				System.out.println(message);                	
+    				System.out.println(message);
+                    System.out.println("Number of Bytes: " + message.getBytes().length);
                 }
 			}
 		} while (!input.equalsIgnoreCase("exit"));
