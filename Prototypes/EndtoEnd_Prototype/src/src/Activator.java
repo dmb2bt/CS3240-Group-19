@@ -36,6 +36,7 @@ public class Activator extends Object {
 					int count = readPipe.read(buffer);
 					if (count > 0) {
 						String input = (new String(buffer)).trim();
+						System.out.println(input);
 						ArrayList<String> commandData = messageHandler
 								.decodeMessage(input);
 						if (!commandData.get(0).equals("end")) {
