@@ -2,6 +2,9 @@
 ################################
 .metadata/
 .classpath
+.project
+.settings/
+
 
 #Ignore IntelliJ generate files
 ###############################
