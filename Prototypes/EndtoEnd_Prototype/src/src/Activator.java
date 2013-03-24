@@ -1,7 +1,9 @@
 package src;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import lejos.nxt.comm.Bluetooth;
 import lejos.nxt.comm.NXTConnection;
@@ -11,7 +13,7 @@ public class Activator extends Object {
 	private boolean debugMode = false;
 	private static boolean usbTest = false;
 	private static NXTConnection connection;
-	private byte[] buffer = new byte[256];
+	private static byte[] buffer = new byte[256];
 	private static DataInputStream readPipe;
 	private static DataOutputStream writePipe;
 	private static Driver driver;
@@ -25,18 +27,31 @@ public class Activator extends Object {
 
 		readPipe = connection.openDataInputStream();
 		writePipe = connection.openDataOutputStream();
-		
+
 		driver = new Driver();
 		messageHandler = new MessageHandler();
+		Thread NXTReceiver = new Thread() {
+			public void run() {
+				try {
+					int count = readPipe.read(buffer);
+					if (count > 0) {
+						String input = (new String(buffer)).trim();
+						ArrayList<String> commandData = messageHandler
+								.decodeMessage(input);
+						if (!commandData.get(0).equals("end")) {
+							driver.implementCommand(commandData);
+						}
+					}
+					Thread.sleep(10);
+				} catch (Exception e) {
 
-		do {
-			try {
-
-			} catch (Exception e) {
-
+				}
 			}
-		} while (true);
+		};
+		NXTReceiver.start();
+		while (true) {
 
+		}
 	}
 
 	public static boolean createConnection() {
