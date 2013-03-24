@@ -54,5 +54,10 @@ public Class Driver{
 	* private method read controls reading a sensor
 	* int sensor number determines the sensor to read from
 	*/
-	private String[] read(int sensorNumber);
-}
+	private ArrayList<String> read(int sensorNumber);
+	
+	/*
+	* Does nothing, no operation
+	*/
+	private boolean noOp();
+	}
