@@ -53,13 +53,13 @@ public class Driver {
 				forward = false;
 			}
 			boolean right;
-			if(command.get(PARAMETER1_INDEX).equalsIgnoreCase("right")){
+			if(command.get(PARAMETER2_INDEX).equalsIgnoreCase("right")){
 				right = true;
 			}else{
 				right = false;
 			}
-			int distance = Integer.parseInt(command.get(PARAMETER2_INDEX));
-			int radius = Integer.parseInt(command.get(PARAMETER2_INDEX));
+			int distance = Integer.parseInt(command.get(PARAMETER3_INDEX));
+			int radius = Integer.parseInt(command.get(PARAMETER4_INDEX));
 			moveArc(forward, right, distance, radius);
 			return new ArrayList<String>();
 		}else{
@@ -118,8 +118,7 @@ public class Driver {
 					pilot.arc(-radius,BACKWARD_ANGLE);
 					return true;
 				}
-			}
-			else{
+			}else{
 				if(distance == 0 && radius == 0){
 					pilot.arcBackward(DEFAULT_RADIUS);
 					return true;

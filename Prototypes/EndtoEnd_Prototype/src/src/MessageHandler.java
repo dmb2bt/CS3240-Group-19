@@ -15,22 +15,13 @@ public class MessageHandler {
 			String command = message.substring(0, 2);
 			String params = message.substring(2,10);
 			if (command.equalsIgnoreCase("ms")) {
-				commandData.add("straight");
-				String direction = params.substring(0,1);
-				if(direction.equalsIgnoreCase("f")){
-					commandData.add("forward");
-				} else if(direction.equalsIgnoreCase("b")){
-					commandData.add("backward");
-				} else {
-					return new ArrayList<String>();
-				}
-				
+				decodeMoveStraight(params, commandData);
 			} else if (command.equalsIgnoreCase("ma")) {
-
+				decodeMoveArc(params, commandData);
 			} else if (command.equalsIgnoreCase("tn")) {
-
+				decodeTurn(params, commandData);
 			} else if (command.equalsIgnoreCase("st")) {
-
+				decodeStop(params, commandData);
 			} else if (command.equalsIgnoreCase("rs")) {
 
 			} else if (command.equalsIgnoreCase("ss")) {
@@ -69,6 +60,91 @@ public class MessageHandler {
 
 	private void decodeMoveStraight(String parameters,
 			ArrayList<String> commandData) {
-
+		commandData.add("straight");
+		String direction = parameters.substring(0,1);
+		if(direction.equalsIgnoreCase("f")){
+			commandData.add("forward");
+		} else if(direction.equalsIgnoreCase("b")){
+			commandData.add("backward");
+		} else {
+			commandData = new ArrayList<String>();
+			return;
+		}
+		String distance = parameters.substring(1);
+		if(isNumeric(distance)){
+			commandData.add(distance);
+		}else{
+			commandData = new ArrayList<String>();
+			return;
+		}
+	}
+	private void decodeTurn(String parameters,
+			ArrayList<String> commandData) {
+		commandData.add("turn");
+		String direction = parameters.substring(0,1);
+		if(direction.equalsIgnoreCase("r")){
+			commandData.add("right");
+		} else if(direction.equalsIgnoreCase("l")){
+			commandData.add("left");
+		} else {
+			commandData = new ArrayList<String>();
+			return;
+		}
+		String radius = parameters.substring(1);
+		if(isNumeric(radius)){
+			commandData.add(radius);
+		}else{
+			commandData = new ArrayList<String>();
+			return;
+		}
+	}
+	private void decodeStop(String parameters,
+			ArrayList<String> commandData) {
+		commandData.add("stop");
+		String params = parameters.substring(0);
+		if( !(isNumeric(params) && Integer.parseInt(params) == 0) ){
+			commandData = new ArrayList<String>();
+			return;
+		}
+	}
+	private void decodeMoveArc(String parameters,
+			ArrayList<String> commandData) {
+		commandData.add("arc");
+		String direction = parameters.substring(0,1);
+		
+		if(direction.equalsIgnoreCase("f")){
+			commandData.add("forward");
+		} else if(direction.equalsIgnoreCase("b")){
+			commandData.add("backward");
+		} else {
+			commandData = new ArrayList<String>();
+			return;
+		}
+		
+		String turn = parameters.substring(1,2);
+		if(turn.equalsIgnoreCase("r")){
+			commandData.add("right");
+		} else if(turn.equalsIgnoreCase("l")){
+			commandData.add("left");
+		} else {
+			commandData = new ArrayList<String>();
+			return;
+		}
+		
+		String distance = parameters.substring(4,7);
+		if(isNumeric(distance)){
+			commandData.add(distance);
+		}else{
+			commandData = new ArrayList<String>();
+			return;
+		}
+		
+		String radius = parameters.substring(7);
+		if(isNumeric(radius)){
+			commandData.add(radius);
+		}else{
+			commandData = new ArrayList<String>();
+			return;
+		}
 	}
 }
