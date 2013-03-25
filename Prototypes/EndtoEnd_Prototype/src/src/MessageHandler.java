@@ -12,27 +12,32 @@ public class MessageHandler {
 		if (message.length() != 11) {
 			return commandData;
 		} else {
-			String command = message.substring(0, 2);
-			String params = message.substring(2,10);
-			if (command.equalsIgnoreCase("ms")) {
-				decodeMoveStraight(params, commandData);
-			} else if (command.equalsIgnoreCase("ma")) {
-				decodeMoveArc(params, commandData);
-			} else if (command.equalsIgnoreCase("tn")) {
-				decodeTurn(params, commandData);
-			} else if (command.equalsIgnoreCase("st")) {
-				decodeStop(params, commandData);
-			} else if (command.equalsIgnoreCase("rs")) {
+			if(verifyChecksum(message)){
+				String command = message.substring(0, 2);
+				String params = message.substring(2,10);
+				if (command.equalsIgnoreCase("ms")) {
+					commandData = decodeMoveStraight(params);
+					return commandData;
+				} else if (command.equalsIgnoreCase("ma")) {
+					commandData = decodeMoveArc(params);
+					return commandData;
+				} else if (command.equalsIgnoreCase("tn")) {
+					commandData = decodeTurn(params);
+					return commandData;
+				} else if (command.equalsIgnoreCase("st")) {
+					commandData = decodeStop(params);
+					return commandData;
+				} else if (command.equalsIgnoreCase("rs")) {
 
-			} else if (command.equalsIgnoreCase("ss")) {
+				} else if (command.equalsIgnoreCase("ss")) {
 
-			} else if (command.equalsIgnoreCase("ra")) {
+				} else if (command.equalsIgnoreCase("ra")) {
 
-			} else if (command.equalsIgnoreCase("ec")) {
+				} else if (command.equalsIgnoreCase("ec")) {
 
-			}
+				}
+			}			
 		}
-
 		return new ArrayList<String>();
 	}
 
@@ -51,15 +56,31 @@ public class MessageHandler {
 	}
 
 	private boolean verifyChecksum(String message) {
-		return true;
+		if(message.length() == 11) {
+            byte[] string = message.getBytes();
+            if(getChecksum(message.substring(0, 10)).equals(message.substring(10))){
+                return true;
+            }
+        }
+        return false;
 	}
 
 	private String getChecksum(String message) {
-		return "";
+		int sum = 0;
+        String ret;
+        byte[] buffer = message.getBytes();
+        for (int i = 0; i < buffer.length; i++) {
+            sum += (int) buffer[i];
+        }
+        sum = sum % 256;
+        byte[] checksum = new byte[1];
+        checksum[0] = (byte) sum;
+        ret = new String(checksum);
+        return ret;
 	}
 
-	private void decodeMoveStraight(String parameters,
-			ArrayList<String> commandData) {
+	private ArrayList<String> decodeMoveStraight(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("straight");
 		String direction = parameters.substring(0,1);
 		if(direction.equalsIgnoreCase("f")){
@@ -67,19 +88,18 @@ public class MessageHandler {
 		} else if(direction.equalsIgnoreCase("b")){
 			commandData.add("backward");
 		} else {
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
 		String distance = parameters.substring(1);
 		if(isNumeric(distance)){
 			commandData.add(distance);
 		}else{
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
+		return commandData;
 	}
-	private void decodeTurn(String parameters,
-			ArrayList<String> commandData) {
+	private ArrayList<String> decodeTurn(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("turn");
 		String direction = parameters.substring(0,1);
 		if(direction.equalsIgnoreCase("r")){
@@ -87,38 +107,35 @@ public class MessageHandler {
 		} else if(direction.equalsIgnoreCase("l")){
 			commandData.add("left");
 		} else {
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
 		String radius = parameters.substring(1);
 		if(isNumeric(radius)){
 			commandData.add(radius);
 		}else{
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
+		return commandData;
 	}
-	private void decodeStop(String parameters,
-			ArrayList<String> commandData) {
+	private ArrayList<String> decodeStop(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("stop");
 		String params = parameters.substring(0);
 		if( !(isNumeric(params) && Integer.parseInt(params) == 0) ){
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
+		return commandData;
 	}
-	private void decodeMoveArc(String parameters,
-			ArrayList<String> commandData) {
-		commandData.add("arc");
+	private ArrayList<String> decodeMoveArc(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("arc");		
 		String direction = parameters.substring(0,1);
-		
 		if(direction.equalsIgnoreCase("f")){
 			commandData.add("forward");
 		} else if(direction.equalsIgnoreCase("b")){
 			commandData.add("backward");
 		} else {
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
 		
 		String turn = parameters.substring(1,2);
@@ -127,24 +144,22 @@ public class MessageHandler {
 		} else if(turn.equalsIgnoreCase("l")){
 			commandData.add("left");
 		} else {
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
 		
 		String distance = parameters.substring(4,7);
 		if(isNumeric(distance)){
 			commandData.add(distance);
 		}else{
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
 		
 		String radius = parameters.substring(7);
 		if(isNumeric(radius)){
 			commandData.add(radius);
 		}else{
-			commandData = new ArrayList<String>();
-			return;
+			return new ArrayList<String>();
 		}
+		return commandData;
 	}
 }

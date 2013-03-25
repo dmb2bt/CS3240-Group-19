@@ -25,34 +25,30 @@ public class Activator extends Object {
 			connected = createConnection();
 		} while (connected == false);
 
-		readPipe = connection.openDataInputStream();
-		writePipe = connection.openDataOutputStream();
-
 		driver = new Driver();
 		messageHandler = new MessageHandler();
-		Thread NXTReceiver = new Thread() {
-			public void run() {
-				try {
-					int count = readPipe.read(buffer);
-					if (count > 0) {
-						String input = (new String(buffer)).trim();
-						System.out.println(input);
-						ArrayList<String> commandData = messageHandler
-								.decodeMessage(input);
-						if (!commandData.get(0).equals("end")) {
-							driver.implementCommand(commandData);
-						}
+		readPipe = connection.openDataInputStream();
+		writePipe = connection.openDataOutputStream();
+		String input = "";
+		do {
+			try {
+				int count = readPipe.read(buffer);
+				if (count > 0) {
+					input = (new String(buffer)).trim();
+					System.out.println(input);
+					ArrayList<String> commandData = messageHandler.decodeMessage(input);
+					String data = "";
+					for(int i = 0; i < commandData.size(); i++){
+						data += commandData.get(i);
 					}
-					Thread.sleep(10);
-				} catch (Exception e) {
-
+					System.out.println(data);	
+					driver.implementCommand(commandData);
 				}
-			}
-		};
-		NXTReceiver.start();
-		while (true) {
+				Thread.sleep(10);
+			} catch (Exception e) {
 
-		}
+			}
+		} while (!input.equals("exit"));
 	}
 
 	public static boolean createConnection() {
