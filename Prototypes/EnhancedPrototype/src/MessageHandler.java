@@ -46,6 +46,7 @@ public class MessageHandler {
 		System.out.println("ACK created");
 		String ack = "AK00000000";
 		ack += getChecksum(ack);
+		System.out.println("Message Length: " + ack.length());
 		return ack;
 	}
 
@@ -83,16 +84,17 @@ public class MessageHandler {
 
 	private String getChecksum(String message) {
 		int sum = 0;
-		String ret;
-		byte[] buffer = message.getBytes();
-		for (int i = 0; i < buffer.length; i++) {
-			sum += (int) buffer[i];
-		}
-		sum = sum % 256;
-		byte[] checksum = new byte[1];
-		checksum[0] = (byte) sum;
-		ret = new String(checksum);
-		return ret;
+        String ret;
+        byte[] buffer = message.getBytes();
+        for (int i = 0; i < buffer.length; i++) {
+            sum += (int) buffer[i];
+        }
+        sum = sum % 256;
+        byte[] checksum = new byte[1];
+        checksum[0] = (byte) sum;
+        ret = new String(checksum);
+        System.out.println("CheckSum: " + ret);
+        return ret;
 	}
 
 	private ArrayList<String> decodeMoveStraight(String parameters) {

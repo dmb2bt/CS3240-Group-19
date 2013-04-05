@@ -59,8 +59,9 @@ public class TestController {
                         byte[] buffer = new byte[256];
                         int count = iHandle.read(buffer); // might wnt to check ack later
                         if (count > 0) {
-                            String ret = (new String(buffer)).trim();
+                            String ret = (new String(buffer)).substring(0,11);
                             System.out.println("Received: " + ret);
+                            System.out.println("Message Length: " + ret.length());
                             long l = System.currentTimeMillis() - start;
                             if(verifyCheckSum(ret)){
                                 System.out.printf("NXJ: %s [%dms]\n", ret, l);
