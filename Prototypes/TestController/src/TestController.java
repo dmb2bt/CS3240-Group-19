@@ -60,6 +60,7 @@ public class TestController {
                         int count = iHandle.read(buffer); // might wnt to check ack later
                         if (count > 0) {
                             String ret = (new String(buffer)).trim();
+                            System.out.println("Received: " + ret);
                             long l = System.currentTimeMillis() - start;
                             if(verifyCheckSum(ret)){
                                 System.out.printf("NXJ: %s [%dms]\n", ret, l);
@@ -362,12 +363,18 @@ public class TestController {
     }
 
     public static boolean verifyCheckSum(String str){
+    	System.out.println("Verifying Checksum");
         if(str.length() == 11) {
+        	System.out.println("Length is correct");
             byte[] string = str.getBytes();
+            String expectCS = getCheckSum(str.substring(0,10));
+            System.out.println("Expected Checksum: " + expectCS);
             if(getCheckSum(str.substring(0, 10)).equals(str.substring(10))){
+            	System.out.println("Checksum Correct for: " + str);
                 return true;
             }
         }
+        System.out.println("Invalid Checksum for: " + str);
         return false;
     }
 }

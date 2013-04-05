@@ -40,6 +40,13 @@ public class MessageHandler {
 		}
 		return new ArrayList<String>();
 	}
+	
+	public String createACK(){
+		System.out.println("ACK created");
+		String ack = "AK00000000";
+		ack += getChecksum(ack);
+		return ack;
+	}
 
 	public String encodeMessage(ArrayList<String> message) {
 		if(message.size() > 1){

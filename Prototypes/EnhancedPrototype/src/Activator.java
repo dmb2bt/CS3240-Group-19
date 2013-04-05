@@ -37,11 +37,11 @@ public class Activator extends Object {
 					input = (new String(buffer)).trim();
 					System.out.println(input);
 					ArrayList<String> commandData = messageHandler.decodeMessage(input);
-					String data = "";
-					for(int i = 0; i < commandData.size(); i++){
-						data += commandData.get(i);
+					if(commandData.size() < 1){
+						System.out.println("Invalid Message");
+					} else {
+						sendMessage(messageHandler.createACK());
 					}
-					System.out.println(data);
 					ArrayList<String> sensorData = driver.implementCommand(commandData);
 					if(sensorData.size() > 1){
 						sendMessage(messageHandler.encodeMessage(sensorData));
@@ -71,6 +71,7 @@ public class Activator extends Object {
 
 	public static void sendMessage(String message) {
 		try {
+			System.out.println("Send Message");
 			writePipe.write(message.getBytes());
 			writePipe.flush();
 		} catch (IOException e) {
