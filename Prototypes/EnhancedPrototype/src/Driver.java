@@ -1,8 +1,11 @@
-
-
 import java.util.ArrayList;
 
+import lejos.nxt.LightSensor;
 import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.nxt.SoundSensor;
+import lejos.nxt.TouchSensor;
+import lejos.nxt.UltrasonicSensor;
 import lejos.robotics.navigation.DifferentialPilot;
 
 public class Driver {
@@ -16,8 +19,18 @@ public class Driver {
 	final int PARAMETER3_INDEX = 3;
 	final int PARAMETER4_INDEX = 4;
 
+	private TouchSensor touchSensor;
+	private UltrasonicSensor ultrasonicSensor;
+	private LightSensor lightSensor;
+	private SoundSensor soundSensor;
+
 	public Driver() {
 		pilot = new DifferentialPilot(2.25f, 5.5f, Motor.B, Motor.C);
+
+		touchSensor = new TouchSensor(SensorPort.S1);
+		ultrasonicSensor = new UltrasonicSensor(SensorPort.S2);
+		lightSensor = new LightSensor(SensorPort.S3);
+		soundSensor = new SoundSensor(SensorPort.S4);
 	}
 
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
@@ -52,7 +65,7 @@ public class Driver {
 				forward = false;
 			}
 			boolean right;
-			if(command.get(PARAMETER2_INDEX).equalsIgnoreCase("right")){
+			if (command.get(PARAMETER2_INDEX).equalsIgnoreCase("right")) {
 				right = true;
 			} else {
 				right = false;
@@ -61,7 +74,11 @@ public class Driver {
 			int radius = Integer.parseInt(command.get(PARAMETER4_INDEX));
 			moveArc(forward, right, distance, radius);
 			return new ArrayList<String>();
-		} else {
+		} else if (command.get(COMMAND_TYPE_INDEX).equalsIgnoreCase("read")) {
+			return readSensor(command.get(PARAMETER1_INDEX));
+		}
+
+		else {
 			noOp();
 			return new ArrayList<String>();
 		}
@@ -117,8 +134,8 @@ public class Driver {
 					pilot.arc(-radius, BACKWARD_ANGLE);
 					return true;
 				}
-			}else{
-				if(distance == 0 && radius == 0){
+			} else {
+				if (distance == 0 && radius == 0) {
 					pilot.arcBackward(DEFAULT_RADIUS);
 					return true;
 				} else {
@@ -158,8 +175,26 @@ public class Driver {
 		return true;
 	}
 
-	private String[] read(int sensorNumber) {
-		return new String[1];
+	private ArrayList<String> readSensor(String sensorType) {
+		ArrayList<String> retList = new ArrayList<String>();
+		retList.add(sensorType);
+		switch (sensorType) {
+		case "T":
+			retList.add((touchSensor.isPressed() ? 1 : 0) + "");
+			break;
+		case "U":
+			retList.add(ultrasonicSensor.getDistance() + "");
+			break;
+		case "S":
+			retList.add(soundSensor.readValue() + "");
+			break;
+		case "L":
+			retList.add(lightSensor.getNormalizedLightValue() + "");
+			break;
+		default:
+			return null;
+		}
+		return retList;
 	}
 
 }

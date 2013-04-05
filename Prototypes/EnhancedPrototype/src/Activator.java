@@ -41,8 +41,11 @@ public class Activator extends Object {
 					for(int i = 0; i < commandData.size(); i++){
 						data += commandData.get(i);
 					}
-					System.out.println(data);	
-					driver.implementCommand(commandData);
+					System.out.println(data);
+					ArrayList<String> sensorData = driver.implementCommand(commandData);
+					if(sensorData.size() > 1){
+						sendMessage(messageHandler.encodeMessage(sensorData));
+					}
 				}
 				Thread.sleep(10);
 			} catch (Exception e) {

@@ -41,9 +41,17 @@ public class MessageHandler {
 		return new ArrayList<String>();
 	}
 
-	public String encodeMessage(String[] message) {
-
-		return "";
+	public String encodeMessage(ArrayList<String> message) {
+		if(message.size() > 1){
+			String encoded = "SD";
+			for(String s: message){
+				encoded += s;
+			}
+			while(encoded.length() < 10){
+				encoded += "0";
+			}
+			return encoded;
+		} else return "0000000000";
 	}
 
 	private boolean isNumeric(String number) {
