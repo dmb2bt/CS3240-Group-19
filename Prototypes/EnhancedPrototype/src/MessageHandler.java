@@ -28,9 +28,10 @@ public class MessageHandler {
 					commandData = decodeStop(params);
 					return commandData;
 				} else if (command.equalsIgnoreCase("rs")) {
-
+					commandData = decodeReadSensor(params);
+					return commandData;
 				} else if (command.equalsIgnoreCase("ss")) {
-
+					commandData = decodeSetSpeed(params);
 				} else if (command.equalsIgnoreCase("ra")) {
 
 				} else if (command.equalsIgnoreCase("ec")) {
@@ -40,7 +41,7 @@ public class MessageHandler {
 		}
 		return new ArrayList<String>();
 	}
-	
+
 	public String createACK(){
 		System.out.println("ACK created");
 		String ack = "AK00000000";
@@ -72,26 +73,26 @@ public class MessageHandler {
 
 	private boolean verifyChecksum(String message) {
 		if(message.length() == 11) {
-            byte[] string = message.getBytes();
-            if(getChecksum(message.substring(0, 10)).equals(message.substring(10))){
-                return true;
-            }
-        }
-        return false;
+			byte[] string = message.getBytes();
+			if(getChecksum(message.substring(0, 10)).equals(message.substring(10))){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private String getChecksum(String message) {
 		int sum = 0;
-        String ret;
-        byte[] buffer = message.getBytes();
-        for (int i = 0; i < buffer.length; i++) {
-            sum += (int) buffer[i];
-        }
-        sum = sum % 256;
-        byte[] checksum = new byte[1];
-        checksum[0] = (byte) sum;
-        ret = new String(checksum);
-        return ret;
+		String ret;
+		byte[] buffer = message.getBytes();
+		for (int i = 0; i < buffer.length; i++) {
+			sum += (int) buffer[i];
+		}
+		sum = sum % 256;
+		byte[] checksum = new byte[1];
+		checksum[0] = (byte) sum;
+		ret = new String(checksum);
+		return ret;
 	}
 
 	private ArrayList<String> decodeMoveStraight(String parameters) {
@@ -152,7 +153,7 @@ public class MessageHandler {
 		} else {
 			return new ArrayList<String>();
 		}
-		
+
 		String turn = parameters.substring(1,2);
 		if(turn.equalsIgnoreCase("r")){
 			commandData.add("right");
@@ -161,14 +162,14 @@ public class MessageHandler {
 		} else {
 			return new ArrayList<String>();
 		}
-		
+
 		String distance = parameters.substring(4,7);
 		if(isNumeric(distance)){
 			commandData.add(distance);
 		}else{
 			return new ArrayList<String>();
 		}
-		
+
 		String radius = parameters.substring(7);
 		if(isNumeric(radius)){
 			commandData.add(radius);
@@ -176,5 +177,31 @@ public class MessageHandler {
 			return new ArrayList<String>();
 		}
 		return commandData;
+	}
+	private ArrayList<String> decodeReadSensor(String parameters)
+	{
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("readsensor");		
+		String direction = parameters.substring(0,1);
+		if(direction.equalsIgnoreCase("U")){
+			commandData.add("ultrasonic");
+		} else if(direction.equalsIgnoreCase("T")){
+			commandData.add("touch");
+		} else if(direction.equalsIgnoreCase("M")){
+			commandData.add("sound");
+		} else if(direction.equalsIgnoreCase("L")){
+			commandData.add("light");
+		} else {
+			return new ArrayList<String>();
+		}
+
+		return commandData;
+	}
+	private ArrayList<String> decodeSetSpeed(String parameters)
+	{
+		ArrayList<String> commandData = new ArrayList<String>();
+
+
+		return commandData;	
 	}
 }

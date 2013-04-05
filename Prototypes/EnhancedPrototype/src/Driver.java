@@ -34,54 +34,55 @@ public class Driver {
 	}
 
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
-		if (command.get(COMMAND_TYPE_INDEX).equalsIgnoreCase("straight")) {
-			boolean forward;
+		boolean forward, right;
+		int radius, distance;
+		String sensor;
+		switch(command.get(COMMAND_TYPE_INDEX)){
+		case "straight":
 			if (command.get(PARAMETER1_INDEX).equalsIgnoreCase("forward")) {
 				forward = true;
 			} else {
 				forward = false;
 			}
-			int distance = Integer.parseInt(command.get(PARAMETER2_INDEX));
+			distance = Integer.parseInt(command.get(PARAMETER2_INDEX));
 			moveStraight(forward, distance);
 			return new ArrayList<String>();
-		} else if (command.get(COMMAND_TYPE_INDEX).equalsIgnoreCase("turn")) {
-			boolean right;
+		case "turn":
 			if (command.get(PARAMETER1_INDEX).equalsIgnoreCase("right")) {
 				right = true;
 			} else {
 				right = false;
 			}
-			int radius = Integer.parseInt(command.get(PARAMETER2_INDEX));
+			radius = Integer.parseInt(command.get(PARAMETER2_INDEX));
 			turn(right, radius);
 			return new ArrayList<String>();
-		} else if (command.get(COMMAND_TYPE_INDEX).equalsIgnoreCase("stop")) {
+		case "stop":
 			stop();
 			return new ArrayList<String>();
-		} else if (command.get(COMMAND_TYPE_INDEX).equalsIgnoreCase("arc")) {
-			boolean forward;
+		case "arc":
 			if (command.get(PARAMETER1_INDEX).equalsIgnoreCase("forward")) {
 				forward = true;
 			} else {
 				forward = false;
 			}
-			boolean right;
 			if (command.get(PARAMETER2_INDEX).equalsIgnoreCase("right")) {
 				right = true;
 			} else {
 				right = false;
 			}
-			int distance = Integer.parseInt(command.get(PARAMETER3_INDEX));
-			int radius = Integer.parseInt(command.get(PARAMETER4_INDEX));
+			distance = Integer.parseInt(command.get(PARAMETER3_INDEX));
+			radius = Integer.parseInt(command.get(PARAMETER4_INDEX));
 			moveArc(forward, right, distance, radius);
 			return new ArrayList<String>();
-		} else if (command.get(COMMAND_TYPE_INDEX).equalsIgnoreCase("read")) {
-			return readSensor(command.get(PARAMETER1_INDEX));
-		}
+		case "readsensor":
+			sensor = command.get(PARAMETER1_INDEX);
+			return readSensor(sensor);
 
-		else {
+		default:
 			noOp();
 			return new ArrayList<String>();
 		}
+		
 	}
 
 	private boolean moveStraight(boolean forward, int distance) {
@@ -176,25 +177,28 @@ public class Driver {
 	}
 
 	private ArrayList<String> readSensor(String sensorType) {
-		ArrayList<String> retList = new ArrayList<String>();
-		retList.add(sensorType);
+		ArrayList<String> returnList = new ArrayList<String>();
+		returnList.add(sensorType);
 		switch (sensorType) {
-		case "T":
-			retList.add((touchSensor.isPressed() ? 1 : 0) + "");
+		case "touch":
+			if(touchSensor.isPressed())
+				returnList.add("pressed");
+			else
+				returnList.add("notpressed");
 			break;
-		case "U":
-			retList.add(ultrasonicSensor.getDistance() + "");
+		case "ultrasonic":
+			returnList.add(Integer.toString(ultrasonicSensor.getDistance()));
 			break;
-		case "S":
-			retList.add(soundSensor.readValue() + "");
+		case "sound":
+			returnList.add(Integer.toString(soundSensor.readValue()));
 			break;
-		case "L":
-			retList.add(lightSensor.getNormalizedLightValue() + "");
+		case "light":
+			returnList.add(Integer.toString(lightSensor.getNormalizedLightValue()));
 			break;
 		default:
-			return null;
+			return new ArrayList<String>();
 		}
-		return retList;
+		return returnList;
 	}
 
 }
