@@ -53,14 +53,34 @@ public class MessageHandler {
 	public String encodeMessage(ArrayList<String> message) {
 		if(message.size() > 1){
 			String encoded = "SD";
-			for(String s: message){
-				encoded += s;
+			switch (message.get(0)) {
+			case "touch":
+				encoded += "T";
+				switch (message.get(1)){
+				case "pressed":
+					encoded += "0000001";
+					break;
+				case "notpressed":
+					encoded += "0000000";
+					break;
+				}
+				break;
+			case "sound":
+				encoded += "S";
+				break;
+			case "ultrasonic":
+				encoded += "U";
+				break;
+			case "light":
+				encoded += "L";
+				break;
+			default:		
+				encoded = "";
+				break;
 			}
-			while(encoded.length() < 10){
-				encoded += "0";
-			}
+			encoded += getChecksum(encoded);
 			return encoded;
-		} else return "0000000000";
+		} else return "";
 	}
 
 	private boolean isNumeric(String number) {

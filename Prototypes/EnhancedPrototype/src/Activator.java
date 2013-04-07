@@ -72,6 +72,7 @@ public class Activator extends Object {
 	public static void sendMessage(String message) {
 		try {
 			System.out.println("Send Message");
+			System.out.println(message);
 			writePipe.write(message.getBytes());
 			writePipe.flush();
 		} catch (IOException e) {
