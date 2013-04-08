@@ -34,7 +34,7 @@ public class Activator extends Object {
 			try {
 				int count = readPipe.read(buffer);
 				if (count > 0) {
-					input = (new String(buffer)).trim();
+					input = (new String(buffer)).substring(0,11);
 					System.out.println(input);
 					ArrayList<String> commandData = messageHandler.decodeMessage(input);
 					if(commandData.size() < 1){
@@ -42,6 +42,7 @@ public class Activator extends Object {
 					} else {
 						sendMessage(messageHandler.createACK());
 					}
+					if(commandData.get(0).equals("exit")) System.exit(0);
 					ArrayList<String> sensorData = driver.implementCommand(commandData);
 					if(sensorData.size() > 1){
 						sendMessage(messageHandler.encodeMessage(sensorData));

@@ -35,7 +35,9 @@ public class MessageHandler {
 				} else if (command.equalsIgnoreCase("ra")) {
 
 				} else if (command.equalsIgnoreCase("ec")) {
-
+					commandData = new ArrayList<String>();
+					commandData.add("exit");
+					return commandData;
 				}
 			}			
 		}

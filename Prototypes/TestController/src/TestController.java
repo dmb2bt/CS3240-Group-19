@@ -92,6 +92,7 @@ public class TestController {
                     start = System.currentTimeMillis();
                     String message = createCommand(input);
                     message = message + getCheckSum(message);
+                    System.out.println(message + ": " + message.length());        
                     if (message.equals("")) {
                         System.out.println("Maformed Input, try again.");
                     } else {
@@ -144,12 +145,18 @@ public class TestController {
                 message = createReadSensorMessage(args);
             } else if (command.equalsIgnoreCase("none")) {
                 message = createNoOpMessage();
+            } else if (command.equalsIgnoreCase("exit")) {
+            	message = createExitMessage();
             }
         }
         return message;
     }
 
-    public static String[] getCommandArguments(String[] words) {
+    private static String createExitMessage() {
+		return "EC00000000";
+	}
+
+	public static String[] getCommandArguments(String[] words) {
         String[] args = new String[words.length - 1];
         for (int i = 1; i < words.length; i++) {
             args[i - 1] = words[i];
