@@ -222,8 +222,8 @@ public class MessageHandler {
 		} else {
 			return new ArrayList<String>();
 		}
-
-		return commandData;
+	
+			return commandData;
 	}
 	private ArrayList<String> decodeSetSpeed(String parameters)
 	{

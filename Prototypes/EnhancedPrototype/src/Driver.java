@@ -21,6 +21,7 @@ public class Driver {
 	final int PARAMETER3_INDEX = 3;
 	final int PARAMETER4_INDEX = 4;
 	final int SAFEDISTANCE = 100;
+	private boolean DRIVING = false;
 
 	private TouchSensor touchSensor;
 	private UltrasonicSensor ultrasonicSensor;
@@ -36,7 +37,7 @@ public class Driver {
 		lightSensor = new LightSensor(SensorPort.S3);
 		soundSensor = new SoundSensor(SensorPort.S4);
 
-/*		SensorPort.S1.addSensorPortListener(new SensorPortListener() { 
+		/*		SensorPort.S1.addSensorPortListener(new SensorPortListener() { 
 			@Override
 			public void stateChanged(SensorPort arg0, int arg1,
 					int arg2) {
@@ -48,8 +49,10 @@ public class Driver {
 			public void run(){
 				while (true){
 					if (ultrasonicSensor.getDistance() < 50){
-						Sound.beepSequenceUp();
-						stop();
+						if(DRIVING){
+							Sound.beepSequenceUp();
+							stop();
+						}
 					}
 					if(touchSensor.isPressed()){
 						Sound.beepSequence();
@@ -114,6 +117,7 @@ public class Driver {
 	}
 
 	private boolean moveStraight(boolean forward, int distance) {
+		DRIVING = true;
 		if (forward) {
 			if (distance == 0) {
 				pilot.forward();
@@ -135,7 +139,7 @@ public class Driver {
 
 	private boolean moveArc(boolean forward, boolean right, int distance,
 			int radius) {
-
+		DRIVING = true;
 		if (forward) {
 			if (right) {
 				if (distance == 0 && radius == 0) {
@@ -176,6 +180,7 @@ public class Driver {
 	}
 
 	private boolean turn(boolean right, int radius) {
+		DRIVING = true;
 		if (right) {
 			if (radius == 0) {
 				pilot.rotateRight();
@@ -196,6 +201,7 @@ public class Driver {
 	}
 
 	private boolean stop() {
+		DRIVING = false;
 		pilot.stop();
 		return true;
 	}
