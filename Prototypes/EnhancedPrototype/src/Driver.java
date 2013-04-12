@@ -29,6 +29,7 @@ public class Driver {
 
 	public Driver() {
 		pilot = new DifferentialPilot(2.25f, 5.5f, Motor.B, Motor.C);
+		pilot.setRotateSpeed(90);
 
 		touchSensor = new TouchSensor(SensorPort.S1);
 		ultrasonicSensor = new UltrasonicSensor(SensorPort.S2);
@@ -205,9 +206,9 @@ public class Driver {
 		switch (sensorType) {
 		case "touch":
 			if(touchSensor.isPressed())
-				returnList.add("pressed");
+				returnList.add("1");
 			else
-				returnList.add("notpressed");
+				returnList.add("0");
 			break;
 		case "ultrasonic":
 			returnList.add(Integer.toString(ultrasonicSensor.getDistance()));

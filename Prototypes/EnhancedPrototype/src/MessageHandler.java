@@ -3,6 +3,7 @@
 import java.util.ArrayList;
 
 public class MessageHandler {
+	static final int MESSAGE_LENGTH = 10;
 
 	public MessageHandler() {
 	}
@@ -52,20 +53,13 @@ public class MessageHandler {
 		return ack;
 	}
 
-	public String encodeMessage(ArrayList<String> message) {
-		if(message.size() > 1){
+	public String encodeMessage(ArrayList<String> messageData) {
+		if(messageData.size() > 1){
 			String encoded = "SD";
-			switch (message.get(0)) {
+			String value = messageData.get(1);
+			switch (messageData.get(0)) {
 			case "touch":
 				encoded += "T";
-				switch (message.get(1)){
-				case "pressed":
-					encoded += "0000001";
-					break;
-				case "notpressed":
-					encoded += "0000000";
-					break;
-				}
 				break;
 			case "sound":
 				encoded += "S";
@@ -79,6 +73,9 @@ public class MessageHandler {
 			default:		
 				encoded = "";
 				break;
+			}
+			if(isNumeric(value)){
+				encoded += getPadding(encoded.length(), value.length()) + value;
 			}
 			encoded += getChecksum(encoded);
 			return encoded;
@@ -103,7 +100,14 @@ public class MessageHandler {
 		}
 		return false;
 	}
-
+	
+	private String getPadding(int messageHeadingLength, int messageTailLength){
+		String returnString = "";
+		for(int i = 0; i < MESSAGE_LENGTH - messageHeadingLength - messageTailLength; i++){
+			returnString += "0";
+		}
+		return returnString;
+	}
 	private String getChecksum(String message) {
 		int sum = 0;
         String ret;
