@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import lejos.nxt.SensorPort;
+import lejos.nxt.SensorPortListener;
 import lejos.nxt.comm.Bluetooth;
 import lejos.nxt.comm.NXTConnection;
 import lejos.nxt.comm.USB;
@@ -30,6 +32,9 @@ public class Activator extends Object {
 		readPipe = connection.openDataInputStream();
 		writePipe = connection.openDataOutputStream();
 		String input = "";
+		
+
+
 		do {
 			try {
 				int count = readPipe.read(buffer);
