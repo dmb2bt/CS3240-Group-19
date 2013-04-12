@@ -36,24 +36,28 @@ public class Driver {
 		lightSensor = new LightSensor(SensorPort.S3);
 		soundSensor = new SoundSensor(SensorPort.S4);
 
-		SensorPort.S1.addSensorPortListener(new SensorPortListener() { 
+/*		SensorPort.S1.addSensorPortListener(new SensorPortListener() { 
 			@Override
 			public void stateChanged(SensorPort arg0, int arg1,
 					int arg2) {
 				Sound.beepSequenceUp();
 				stop();
 			}
-		});
-		SensorPort.S2.addSensorPortListener(new SensorPortListener() { 
-			@Override
-			public void stateChanged(SensorPort arg0, int arg1,
-					int arg2) {
-				Sound.beepSequence();
-				if(ultrasonicSensor.getDistance() < SAFEDISTANCE){
-					stop();
+		});*/
+		(new Thread() {
+			public void run(){
+				while (true){
+					if (ultrasonicSensor.getDistance() < 50){
+						Sound.beepSequenceUp();
+						stop();
+					}
+					if(touchSensor.isPressed()){
+						Sound.beepSequence();
+						stop();
+					}
 				}
 			}
-		});
+		}).start();
 
 	}
 
