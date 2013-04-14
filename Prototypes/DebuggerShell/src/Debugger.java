@@ -1,7 +1,9 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Scanner;
 
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommException;
@@ -35,6 +37,7 @@ public class Debugger {
 	}
 
 	public void readFromRobot() {
+		
 		Thread t = new Thread() {
 			public void run() {
 				try {

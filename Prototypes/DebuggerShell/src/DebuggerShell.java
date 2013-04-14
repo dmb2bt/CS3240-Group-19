@@ -147,17 +147,17 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		txtTouchUnread.setBounds(516, 223, 116, 22);
 		f.getContentPane().add(txtTouchUnread);
 		
-		JButton btnReadSound = new JButton("Read");
-		btnReadSound.setActionCommand("Read Sound");
-		btnReadSound.setBounds(638, 118, 69, 25);
-		btnReadSound.addActionListener(this);
-		f.getContentPane().add(btnReadSound);
-		
 		JButton btnReadLight = new JButton("Read");
 		btnReadLight.setActionCommand("Read Light");
-		btnReadLight.setBounds(638, 152, 69, 25);
+		btnReadLight.setBounds(638, 118, 69, 25);
 		btnReadLight.addActionListener(this);
 		f.getContentPane().add(btnReadLight);
+		
+		JButton btnReadSound = new JButton("Read");
+		btnReadSound.setActionCommand("Read Sound");
+		btnReadSound.setBounds(638, 152, 69, 25);
+		btnReadSound.addActionListener(this);
+		f.getContentPane().add(btnReadSound);
 		
 		JButton btnReadUltrasonic = new JButton("Read");
 		btnReadUltrasonic.setActionCommand("Read Ultrasonic");
@@ -186,7 +186,7 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		case "U":
 			txtUltrasonicUnread.setText("Ultrasonic: " + value);
 			break;
-		case "S":
+		case "M":
 			txtSoundUnread.setText("Sound: " + value);
 			break;
 		case "L":
@@ -262,12 +262,14 @@ public class DebuggerShell implements KeyListener, ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		String ac = arg0.getActionCommand();
+
 		if(ac.equals("Establish Connection")){
 			debugger.establishConnection();
 		} else if(ac.equals("End Connection")){
 			debugger.endConnection();
 		} else if(ac.equals("Read Sound")){
 			debugger.sendMessage(debugger.createCommand("read m"));
+			System.out.println(debugger.createCommand("read m"));
 		} else if(ac.equals("Read Light")){
 			debugger.sendMessage(debugger.createCommand("read l"));
 		} else if(ac.equals("Read Ultrasonic")){
