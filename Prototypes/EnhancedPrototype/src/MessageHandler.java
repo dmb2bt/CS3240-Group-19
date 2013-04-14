@@ -33,6 +33,7 @@ public class MessageHandler {
 					return commandData;
 				} else if (command.equalsIgnoreCase("ss")) {
 					commandData = decodeSetSpeed(params);
+					return commandData;
 				} else if (command.equalsIgnoreCase("ra")) {
 
 				} else if (command.equalsIgnoreCase("ec")) {
@@ -62,7 +63,7 @@ public class MessageHandler {
 				encoded += "T";
 				break;
 			case "sound":
-				encoded += "S";
+				encoded += "M";
 				break;
 			case "ultrasonic":
 				encoded += "U";
@@ -100,7 +101,7 @@ public class MessageHandler {
 		}
 		return false;
 	}
-	
+
 	private String getPadding(int messageHeadingLength, int messageTailLength){
 		String returnString = "";
 		for(int i = 0; i < MESSAGE_LENGTH - messageHeadingLength - messageTailLength; i++){
@@ -110,17 +111,17 @@ public class MessageHandler {
 	}
 	private String getChecksum(String message) {
 		int sum = 0;
-        String ret;
-        byte[] buffer = message.getBytes();
-        for (int i = 0; i < buffer.length; i++) {
-            sum += (int) buffer[i];
-        }
-        sum = sum % 256;
-        byte[] checksum = new byte[1];
-        checksum[0] = (byte) sum;
-        ret = new String(checksum);
-        System.out.println("CheckSum: " + ret);
-        return ret;
+		String ret;
+		byte[] buffer = message.getBytes();
+		for (int i = 0; i < buffer.length; i++) {
+			sum += (int) buffer[i];
+		}
+		sum = sum % 256;
+		byte[] checksum = new byte[1];
+		checksum[0] = (byte) sum;
+		ret = new String(checksum);
+		System.out.println("CheckSum: " + ret);
+		return ret;
 	}
 
 	private ArrayList<String> decodeMoveStraight(String parameters) {
@@ -211,25 +212,62 @@ public class MessageHandler {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("readsensor");		
 		String direction = parameters.substring(0,1);
-		if(direction.equalsIgnoreCase("U")){
+		switch (direction) {
+		case "U":
 			commandData.add("ultrasonic");
-		} else if(direction.equalsIgnoreCase("T")){
+			break;
+		case "T":
 			commandData.add("touch");
-		} else if(direction.equalsIgnoreCase("M")){
+			break;
+		case "M":
 			commandData.add("sound");
-		} else if(direction.equalsIgnoreCase("L")){
+			break;
+		case "L":
 			commandData.add("light");
-		} else {
+			break;
+		default:
 			return new ArrayList<String>();
 		}
-	
-			return commandData;
+
+		return commandData;
 	}
 	private ArrayList<String> decodeSetSpeed(String parameters)
 	{
 		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("setspeed");
+		switch (parameters.substring(0,1)) {
+		case "A":
+			commandData.add("motora");
+			break;
+		case "B":
+			commandData.add("motorb");
+			break;
+		case "C":
+			commandData.add("motorc");
+			break;
+		case "D":
+			commandData.add("drivemotors");
+			break;
+		default:
+			return new ArrayList<String>();
+		}
+		switch (parameters.substring(1,2)) {
+		case "T":
+			commandData.add("travel");
+			break;
+		case "R":
+			commandData.add("rotate");
+			break;
+		default:
+			return new ArrayList<String>();
 
-
+		}
+		String speed = parameters.substring(2);
+		if(isNumeric(speed)){
+			commandData.add(speed);
+		}else{
+			return new ArrayList<String>();
+		}
 		return commandData;	
 	}
 }

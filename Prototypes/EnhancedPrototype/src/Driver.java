@@ -20,8 +20,10 @@ public class Driver {
 	final int PARAMETER2_INDEX = 2;
 	final int PARAMETER3_INDEX = 3;
 	final int PARAMETER4_INDEX = 4;
-	final int SAFEDISTANCE = 100;
+	final int SAFEDISTANCE = 50;
+	final int SOUNDTHRESHOLD = 50;
 	private boolean DRIVING = false;
+	private boolean hasStopped = false;
 
 	private TouchSensor touchSensor;
 	private UltrasonicSensor ultrasonicSensor;
@@ -37,27 +39,26 @@ public class Driver {
 		lightSensor = new LightSensor(SensorPort.S3);
 		soundSensor = new SoundSensor(SensorPort.S4);
 
-		/*		SensorPort.S1.addSensorPortListener(new SensorPortListener() { 
-			@Override
-			public void stateChanged(SensorPort arg0, int arg1,
-					int arg2) {
-				Sound.beepSequenceUp();
-				stop();
-			}
-		});*/
 		(new Thread() {
 			public void run(){
 				while (true){
-					if (ultrasonicSensor.getDistance() < 50){
-						if(DRIVING){
-							Sound.beepSequenceUp();
-							stop();
-						}
+					if(hasStopped){
+						if(ultrasonicSensor.getDistance() > SAFEDISTANCE)
+							hasStopped = false;
+					}else if (!hasStopped && DRIVING && (ultrasonicSensor.getDistance() < SAFEDISTANCE)){
+						Sound.twoBeeps();
+						hasStopped = true;
+						stop();
 					}
-					if(touchSensor.isPressed()){
+					if(DRIVING && (touchSensor.isPressed())){
 						Sound.beepSequence();
 						stop();
 					}
+					if( DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD)) {
+						Sound.playNote(Sound.FLUTE,130,500);
+						stop();
+					}else if(!DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD))
+						moveStraight(false,0);
 				}
 			}
 		}).start();
@@ -65,9 +66,9 @@ public class Driver {
 	}
 
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
-		boolean forward, right;
-		int radius, distance;
-		String sensor;
+		boolean forward, right, travel;
+		int radius, distance, speed;
+		String sensor, motor;
 		switch(command.get(COMMAND_TYPE_INDEX)){
 		case "straight":
 			if (command.get(PARAMETER1_INDEX).equalsIgnoreCase("forward")) {
@@ -108,14 +109,41 @@ public class Driver {
 		case "readsensor":
 			sensor = command.get(PARAMETER1_INDEX);
 			return readSensor(sensor);
-
+		case "setspeed":
+			motor = command.get(PARAMETER1_INDEX);
+			if(command.get(PARAMETER2_INDEX).equalsIgnoreCase("travel"))
+				travel = true;
+			else
+				travel = false;
+			speed = Integer.parseInt(command.get(PARAMETER2_INDEX));
+			setSpeed(motor, travel, speed);
+			return new ArrayList<String>();
 		default:
 			noOp();
 			return new ArrayList<String>();
 		}
 
 	}
-
+	private boolean setSpeed(String motor, boolean travel, int speed)
+	{
+		switch (motor) {
+		case "motora":
+			return true;
+		case "motorb":
+			return true;
+		case "motorc":
+			return true;
+		case "drivemotors":
+			if(travel)
+				pilot.setTravelSpeed(speed);
+			else
+				pilot.setRotateSpeed(speed);
+			System.out.println("speed set to " + speed);
+			return true;
+		default:
+			return false;
+		}
+	}
 	private boolean moveStraight(boolean forward, int distance) {
 		DRIVING = true;
 		if (forward) {
