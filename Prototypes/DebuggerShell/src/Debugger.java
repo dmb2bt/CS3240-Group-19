@@ -44,7 +44,9 @@ public class Debugger {
 							String input = (new String(buffer))
 									.substring(0, 11);
 							shell.printRobotMessage("Message from robot: " + input);
-							shell.set(input.charAt(3) + "", Integer.parseInt(input.substring(3, 10)));
+							
+							
+							shell.set(input.charAt(2) + "", Integer.parseInt(input.substring(3, 10)));
 						}
 					}
 				} catch (Exception e) {
