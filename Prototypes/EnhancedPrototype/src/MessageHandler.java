@@ -16,30 +16,33 @@ public class MessageHandler {
 			if(verifyChecksum(message)){
 				String command = message.substring(0, 2);
 				String params = message.substring(2,10);
-				if (command.equalsIgnoreCase("ms")) {
+				switch (command) {
+				case "MS":
 					commandData = decodeMoveStraight(params);
 					return commandData;
-				} else if (command.equalsIgnoreCase("ma")) {
+				case "MA":
 					commandData = decodeMoveArc(params);
 					return commandData;
-				} else if (command.equalsIgnoreCase("tn")) {
+				case "TN":
 					commandData = decodeTurn(params);
 					return commandData;
-				} else if (command.equalsIgnoreCase("st")) {
+				case "ST":
 					commandData = decodeStop(params);
 					return commandData;
-				} else if (command.equalsIgnoreCase("rs")) {
+				case "RS":
 					commandData = decodeReadSensor(params);
 					return commandData;
-				} else if (command.equalsIgnoreCase("ss")) {
+				case "SS":
 					commandData = decodeSetSpeed(params);
 					return commandData;
-				} else if (command.equalsIgnoreCase("ra")) {
-
-				} else if (command.equalsIgnoreCase("ec")) {
+				case "RA":
+					break;
+				case "EC":
 					commandData = new ArrayList<String>();
 					commandData.add("exit");
 					return commandData;
+				default:
+					return new ArrayList<String>();
 				}
 			}			
 		}
@@ -128,13 +131,17 @@ public class MessageHandler {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("straight");
 		String direction = parameters.substring(0,1);
-		if(direction.equalsIgnoreCase("f")){
+		switch (direction) {
+		case "F":
 			commandData.add("forward");
-		} else if(direction.equalsIgnoreCase("b")){
+			break;
+		case "B":
 			commandData.add("backward");
-		} else {
+			break;
+		default:
 			return new ArrayList<String>();
 		}
+
 		String distance = parameters.substring(1);
 		if(isNumeric(distance)){
 			commandData.add(distance);
@@ -147,11 +154,14 @@ public class MessageHandler {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("turn");
 		String direction = parameters.substring(0,1);
-		if(direction.equalsIgnoreCase("r")){
+		switch (direction) {
+		case "R":
 			commandData.add("right");
-		} else if(direction.equalsIgnoreCase("l")){
+			break;
+		case "L":
 			commandData.add("left");
-		} else {
+			break;
+		default:
 			return new ArrayList<String>();
 		}
 		String radius = parameters.substring(1);
@@ -175,20 +185,26 @@ public class MessageHandler {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("arc");		
 		String direction = parameters.substring(0,1);
-		if(direction.equalsIgnoreCase("f")){
+		switch (direction) {
+		case "F":
 			commandData.add("forward");
-		} else if(direction.equalsIgnoreCase("b")){
+			break;
+		case "B":
 			commandData.add("backward");
-		} else {
+			break;
+		default:
 			return new ArrayList<String>();
 		}
 
 		String turn = parameters.substring(1,2);
-		if(turn.equalsIgnoreCase("r")){
+		switch (turn) {
+		case "R":
 			commandData.add("right");
-		} else if(turn.equalsIgnoreCase("l")){
+			break;
+		case "L":
 			commandData.add("left");
-		} else {
+			break;
+		default:
 			return new ArrayList<String>();
 		}
 

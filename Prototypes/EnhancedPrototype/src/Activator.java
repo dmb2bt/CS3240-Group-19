@@ -32,9 +32,6 @@ public class Activator extends Object {
 		readPipe = connection.openDataInputStream();
 		writePipe = connection.openDataOutputStream();
 		String input = "";
-		
-
-
 		do {
 			try {
 				int count = readPipe.read(buffer);
