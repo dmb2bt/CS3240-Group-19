@@ -39,8 +39,8 @@ public class Driver {
 		lightSensor = new LightSensor(SensorPort.S3);
 		soundSensor = new SoundSensor(SensorPort.S4);
 
-		(new Thread() {
-			public void run(){
+	(new Thread() {
+			public void run(){	
 				while (true){
 					if(hasStopped){
 						if(ultrasonicSensor.getDistance() > SAFEDISTANCE)
