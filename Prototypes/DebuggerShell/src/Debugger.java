@@ -60,9 +60,10 @@ public class Debugger {
 		};
 		readThread.start();
 	}
-	
-	public void stopReading(){
-		readThread.stop();
+
+	public void stopReading() {
+		if(readThread == null) return;
+		else if(readThread.isAlive()) readThread.stop();
 	}
 
 	public void establishConnection() {
@@ -127,7 +128,7 @@ public class Debugger {
 			shell.printMessage(getCommandHelp());
 		} else if (!isConnected) {
 			shell.printMessage("Robot is not connected!");
-		} else if (command.equalsIgnoreCase("exit")){
+		} else if (command.equalsIgnoreCase("exit")) {
 			endConnection();
 		} else {
 			String message = createCommand(command);
@@ -153,7 +154,7 @@ public class Debugger {
 				+ " \n\nARC: Type: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\nFor example, to arc up and right, type: arc forward right"
 				+ " \n\nTURN: Type: 'turn [specify direction: right or left] [specify number of degrees to turn]"
 				+ " \n\nSTOP: Type: 'stop'"
-				+ " \n\nSET SPEED: Type: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [number of new speed].\nFor example to set motor a to speed 30 type: setspeed a 30"
+				+ " \n\nSET SPEED: Type: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [t or r for type of speed] [number of new speed].\nFor example to set motor a to speed 30 type: setspeed a 30"
 				+ " \n\nREAD: Type: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \nFor example to read information from the light sensor type: read l.  \nTo read information from all sensors type: read all"
 				+ " \n\nNONE: To create NoOp message type: none";
 	}
@@ -201,7 +202,14 @@ public class Debugger {
 		return message;
 	}
 
-	private static String addPaddingZeroes(String message) {
+	private static String addPaddingZeros(String command, String endOfCommand){
+		for(int i = command.length() - 1; i < 9-endOfCommand.length(); i++){
+			command += "0";
+		}
+		return command + endOfCommand;
+	}
+	
+	private static String addTrailingZeros(String message) {
 		if (message.length() >= 10)
 			return message;
 		else {
@@ -248,7 +256,7 @@ public class Debugger {
 			} else if (args.length > 2) {
 				return "";
 			} else {
-				command += "0000000";
+				command = addTrailingZeros(command);
 			}
 		}
 		return command;
@@ -278,7 +286,7 @@ public class Debugger {
 				}
 			}
 			command += "090";
-			command += "000";
+			command = addTrailingZeros(command);
 		}
 		return command;
 	}
@@ -305,19 +313,19 @@ public class Debugger {
 					return "";
 				}
 			} else {
-				command += "0000000";
+				command = addTrailingZeros(command);
 			}
 		}
 		return command;
 	}
 
 	public static String createStopCommand() {
-		return addPaddingZeroes("ST");
+		return addTrailingZeros("ST");
 	}
 
 	public static String createSetSpeedMessage(String[] args) {
 		String command = "SS";
-		if (args.length != 2) {
+		if (args.length != 3) {
 			return "";
 		} else {
 			if (args[0].equalsIgnoreCase("a") || args[0].equalsIgnoreCase("b")
@@ -327,11 +335,16 @@ public class Debugger {
 			} else {
 				return "";
 			}
-			if (isNumeric(args[1])) {
-				for (int i = 0; i < 7 - args[1].length(); i++) {
+			if (args[1].equalsIgnoreCase("t") || args[1].equalsIgnoreCase("r")) {
+				command += args[1].toUpperCase();
+			} else {
+				return "";
+			}
+			if (isNumeric(args[2])) {
+				for (int i = 0; i < 6 - args[2].length(); i++) {
 					command += "0";
 				}
-				command += args[1];
+				command += args[2];
 			} else {
 				return "";
 			}
@@ -354,12 +367,12 @@ public class Debugger {
 			return "";
 		}
 		if (args[0].equalsIgnoreCase("all")) {
-			command = "RA00000000";
+			command = addTrailingZeros("RA");
 		} else {
 			if (args[0].equalsIgnoreCase("u") || args[0].equalsIgnoreCase("t")
 					|| args[0].equalsIgnoreCase("m")
 					|| args[0].equalsIgnoreCase("l")) {
-				command = "RS" + args[0].toUpperCase() + "0000000";
+				command = addTrailingZeros("RS" + args[0].toUpperCase());
 			}
 		}
 		return command;

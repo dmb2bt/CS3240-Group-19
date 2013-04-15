@@ -2,6 +2,7 @@ import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -16,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.awt.Font;
 import javax.swing.SpringLayout;
@@ -27,6 +30,7 @@ import java.io.OutputStream;
 
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
 import lejos.pc.comm.NXTCommFactory;
@@ -34,18 +38,19 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 
 
-public class DebuggerShell implements KeyListener, ActionListener {
+public class DebuggerShell implements KeyListener, ActionListener, MouseListener {
 	
 	private JFrame f;
 	private JTextPane textPane;
 	private String history;
 	private Debugger debugger;
 	
-	private ArrayList<Point> commands;
-	private ArrayList<Point> messages;
+	private ArrayList<Point> commandFormat;
+	private ArrayList<Point> messageFormat;
 
 	private JTextField textField;
 	private JTextField textField_1;
+	private JScrollPane scrollPane;
 	private JTextField txtLightUnread;
 	private JTextField txtSoundUnread;
 	private JTextField txtUltrasonicUnread;
@@ -55,8 +60,8 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		this.debugger = d;
 		
 		f = new JFrame();
-		commands = new ArrayList<Point>();
-		messages = new ArrayList<Point>();
+		commandFormat = new ArrayList<Point>();
+		messageFormat = new ArrayList<Point>();
 		
 		history = "";
 		
@@ -74,26 +79,30 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		btnEndConnection.addActionListener(this);
 		
 		JButton btnForward = new JButton("Forward");
+		btnForward.addMouseListener(this);
 		btnForward.setBounds(516, 422, 191, 25);
 		f.getContentPane().add(btnForward);
 		btnForward.addActionListener(this);
 		
 		JButton btnLeft = new JButton("Left");
+		btnLeft.addMouseListener(this);
 		btnLeft.setBounds(516, 460, 89, 25);
 		f.getContentPane().add(btnLeft);
 		btnLeft.addActionListener(this);
 		
 		JButton btnRight = new JButton("Right");
+		btnRight.addMouseListener(this);
 		btnRight.setBounds(617, 460, 90, 25);
 		f.getContentPane().add(btnRight);
 		btnRight.addActionListener(this);
 		
 		JButton btnBackward = new JButton("Backward");
+		btnBackward.addMouseListener(this);
 		btnBackward.setBounds(516, 497, 191, 25);
 		f.getContentPane().add(btnBackward);
 		btnBackward.addActionListener(this);
 		
-		JScrollPane scrollPane = new JScrollPane();
+		scrollPane = new JScrollPane();
 		scrollPane.setBounds(12, 13, 492, 472);
 		f.getContentPane().add(scrollPane);
 		textPane = new JTextPane();
@@ -170,6 +179,10 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		btnReadTouch.setActionCommand("Read Touch");
 		btnReadTouch.addActionListener(this);
 		f.getContentPane().add(btnReadTouch);
+		
+		JLabel lblMovement = new JLabel("Movement");
+		lblMovement.setBounds(516, 393, 89, 16);
+		f.getContentPane().add(lblMovement);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 		f.setSize(737, 584);
@@ -193,14 +206,14 @@ public class DebuggerShell implements KeyListener, ActionListener {
 			txtLightUnread.setText("Light: " + value);
 			break;
 		case "T":
-			txtTouchUnread.setText("Touch: " + value);
+			txtTouchUnread.setText("Touch: " + (value == 1 ? "true" : "false"));
 			break;
 		}
 	}
 	
 	
 	public void printRobotMessage(String message){
-		messages.add(new Point(history.length(), message.length()));
+		messageFormat.add(new Point(history.length(), message.length()));
 		
 		history += (message+ "\n");
 		textPane.setText(history);
@@ -223,12 +236,17 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		AttributeSet asetT = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, Color.MAGENTA);
 		sDoc.setCharacterAttributes(0, "Debugger Started.".length(), asetT, true);
 		
-		for(Point p: commands){
+		for(Point p: commandFormat){
 			sDoc.setCharacterAttributes(p.x, p.y, aset, true);
 		}
-		for(Point p: messages){
+		for(Point p: messageFormat){
 			sDoc.setCharacterAttributes(p.x, p.y, asetM, true);
 		}
+		JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
+		
+		Document d = textPane.getDocument();
+		textPane.select(d.getLength(), d.getLength());
+		
 	}
 
 	@Override
@@ -238,7 +256,7 @@ public class DebuggerShell implements KeyListener, ActionListener {
 			String command = textField.getText();
 			textField.setText("");
 			history += ">> " + command + "\n";
-			commands.add(new Point(oldLength, command.length() + 3));
+			commandFormat.add(new Point(oldLength, command.length() + 3));
 			
 			textPane.setText(history);
 			color();
@@ -269,7 +287,6 @@ public class DebuggerShell implements KeyListener, ActionListener {
 			debugger.endConnection();
 		} else if(ac.equals("Read Sound")){
 			debugger.sendMessage(debugger.createCommand("read m"));
-			System.out.println(debugger.createCommand("read m"));
 		} else if(ac.equals("Read Light")){
 			debugger.sendMessage(debugger.createCommand("read l"));
 		} else if(ac.equals("Read Ultrasonic")){
@@ -277,6 +294,53 @@ public class DebuggerShell implements KeyListener, ActionListener {
 		} else if(ac.equals("Read Touch")){
 			debugger.sendMessage(debugger.createCommand("read t"));
 		}
-		else System.out.println(ac);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		Component c = arg0.getComponent();
+		if(! (c instanceof JButton)) return;
+		JButton b = (JButton) c;
+		String ac = b.getActionCommand();
+		if(ac.equals("Forward")){
+			debugger.sendMessage(debugger.createCommand("move forward"));
+		} else if(ac.equals("Backward")){
+			debugger.sendMessage(debugger.createCommand("move backward"));
+		} else if(ac.equals("Left")){
+			debugger.sendMessage(debugger.createCommand("turn left"));
+		} else if(ac.equals("Right")){
+			debugger.sendMessage(debugger.createCommand("turn right"));
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		Component c = arg0.getComponent();
+		if(!(c instanceof JButton)) return;
+		JButton b = (JButton) c;
+		String ac = b.getActionCommand();
+		if(ac.equals("Forward") || ac.equals("Backward") || ac.equals("Left") || ac.equals("Right")){
+			debugger.sendMessage(debugger.createStopCommand());
+		}
 	}
 }
