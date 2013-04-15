@@ -13,6 +13,7 @@ import lejos.pc.comm.NXTInfo;
 public class Debugger {
 	private DebuggerShell shell;
 	private boolean isConnected;
+	private Thread readThread;
 
 	private static NXTComm connection;
 	private static boolean USBTest = false;
@@ -37,8 +38,7 @@ public class Debugger {
 	}
 
 	public void readFromRobot() {
-		
-		Thread t = new Thread() {
+		readThread = new Thread() {
 			public void run() {
 				try {
 					while (true) {
@@ -46,10 +46,11 @@ public class Debugger {
 						if (count > 0) {
 							String input = (new String(buffer))
 									.substring(0, 11);
-							shell.printRobotMessage("Message from robot: " + input);
-							
-							
-							shell.set(input.charAt(2) + "", Integer.parseInt(input.substring(3, 10)));
+							shell.printRobotMessage("Message from robot: "
+									+ input);
+
+							shell.set(input.charAt(2) + "",
+									Integer.parseInt(input.substring(3, 10)));
 						}
 					}
 				} catch (Exception e) {
@@ -57,7 +58,11 @@ public class Debugger {
 				}
 			}
 		};
-		t.start();
+		readThread.start();
+	}
+	
+	public void stopReading(){
+		readThread.stop();
 	}
 
 	public void establishConnection() {
@@ -80,8 +85,8 @@ public class Debugger {
 					}
 
 					connection.open(info[0]);
-					OutputStream os = connection.getOutputStream();
-					InputStream is = connection.getInputStream();
+					os = connection.getOutputStream();
+					is = connection.getInputStream();
 
 					oHandle = new DataOutputStream(os);
 					iHandle = new DataInputStream(is);
@@ -94,8 +99,8 @@ public class Debugger {
 					// like
 					// RV for read variable, SM for set mode, SB for set
 					// breakpoint
-					sendMessage("DMSM000001");
 					readFromRobot();
+					sendMessage("DMSM000001");
 
 				} catch (Exception e) {
 					shell.printMessage("Connection failed to establish.");
@@ -118,12 +123,14 @@ public class Debugger {
 	}
 
 	public void runCommand(String command) {
-		if (command.equals("help") || command.equals("?")) {
+		if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("?")) {
 			shell.printMessage(getCommandHelp());
 		} else if (!isConnected) {
 			shell.printMessage("Robot is not connected!");
+		} else if (command.equalsIgnoreCase("exit")){
+			endConnection();
 		} else {
-			String message = TestController.createCommand(command);
+			String message = createCommand(command);
 			sendMessage(message);
 		}
 
@@ -132,7 +139,9 @@ public class Debugger {
 	public void endConnection() {
 		shell.printMessage("Ending Connection...");
 		sendMessage("DMSM000000");
-
+		sendMessage("EC00000000");
+		stopReading();
+		isConnected = false;
 		shell.printRobotMessage("Disconnected from robot");
 	}
 
@@ -187,21 +196,19 @@ public class Debugger {
 				message = createReadSensorMessage(args);
 			} else if (command.equalsIgnoreCase("none")) {
 				message = createNoOpMessage();
-			} else if (command.equalsIgnoreCase("exit")) {
-				message = createExitMessage();
 			}
 		}
 		return message;
 	}
 
-	private static String padZeros(String s) {
-		if (s.length() >= 10)
-			return s;
+	private static String addPaddingZeroes(String message) {
+		if (message.length() >= 10)
+			return message;
 		else {
-			while (s.length() < 10) {
-				s += "0";
+			while (message.length() < 10) {
+				message += "0";
 			}
-			return s;
+			return message;
 		}
 	}
 
@@ -215,10 +222,6 @@ public class Debugger {
 
 	public static String getCommand(String[] words) {
 		return words[0];
-	}
-
-	private static String createExitMessage() {
-		return padZeros("EC");
 	}
 
 	public static String createMoveCommand(String[] args) {
@@ -309,7 +312,7 @@ public class Debugger {
 	}
 
 	public static String createStopCommand() {
-		return padZeros("ST");
+		return addPaddingZeroes("ST");
 	}
 
 	public static String createSetSpeedMessage(String[] args) {

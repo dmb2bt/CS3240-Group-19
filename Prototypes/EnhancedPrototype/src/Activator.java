@@ -1,5 +1,4 @@
 
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,7 +11,7 @@ import lejos.nxt.comm.NXTConnection;
 import lejos.nxt.comm.USB;
 
 public class Activator extends Object {
-	private boolean debugMode = false;
+	private static boolean debugMode = false;
 	private static boolean usbTest = false;
 	private static NXTConnection connection;
 	private static byte[] buffer = new byte[256];
@@ -36,17 +35,22 @@ public class Activator extends Object {
 			try {
 				int count = readPipe.read(buffer);
 				if (count > 0) {
-					input = (new String(buffer)).substring(0,11);
+					input = (new String(buffer)).substring(0, 11);
 					System.out.println(input);
-					ArrayList<String> commandData = messageHandler.decodeMessage(input);
-					if(commandData.size() < 1){
+					ArrayList<String> commandData = messageHandler
+							.decodeMessage(input);
+					if (commandData.size() < 1) {
 						System.out.println("Invalid Message");
 					} else {
 						sendMessage(messageHandler.createACK());
 					}
-					if(commandData.get(0).equals("exit")) System.exit(0);
-					ArrayList<String> sensorData = driver.implementCommand(commandData);
-					if(sensorData.size() > 1){
+					if (commandData.get(0).equals("exit"))
+						System.exit(0);
+					if (commandData.get(0).equalsIgnoreCase("mode"))
+						debugMode = Boolean.parseBoolean(commandData.get(1));
+					ArrayList<String> sensorData = driver
+							.implementCommand(commandData);
+					if (sensorData.size() > 1) {
 						sendMessage(messageHandler.encodeMessage(sensorData));
 					}
 				}
