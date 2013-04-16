@@ -39,34 +39,35 @@ public class Driver {
 		lightSensor = new LightSensor(SensorPort.S3);
 		soundSensor = new SoundSensor(SensorPort.S4);
 
-		(new Thread() {
-			public void run() {
-				while (true) {
-					if (hasStopped) {
-						if (ultrasonicSensor.getDistance() > SAFEDISTANCE)
-							hasStopped = false;
-					} else if (!hasStopped && DRIVING
-							&& (ultrasonicSensor.getDistance() < SAFEDISTANCE)) {
-						Sound.twoBeeps();
-						hasStopped = true;
-						stop();
-					}
-					if (DRIVING && (touchSensor.isPressed())) {
-						Sound.beepSequence();
-						stop();
-					}
-					if (DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD)) {
-						Sound.playNote(Sound.FLUTE, 130, 500);
-						stop();
-					} else if (!DRIVING
-							&& (soundSensor.readValue() > SOUNDTHRESHOLD))
-						moveStraight(false, 0);
-				}
-			}
-		}).start();
-
 	}
-
+	public ArrayList<String> safetySense()
+	{
+		if (hasStopped) {
+			if (ultrasonicSensor.getDistance() > SAFEDISTANCE)
+				hasStopped = false;
+		} else if (!hasStopped && DRIVING
+				&& (ultrasonicSensor.getDistance() < SAFEDISTANCE)) {
+			Sound.twoBeeps();
+			hasStopped = true;
+			stop();
+			return readSensor("ultrasonic");
+		}
+		if (DRIVING && (touchSensor.isPressed())) {
+			Sound.beepSequence();
+			stop();
+			return readSensor("touch");
+		}
+		if (DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD)) {
+			Sound.playNote(Sound.FLUTE, 130, 500);
+			stop();
+			return readSensor("sound");
+		} else if (!DRIVING
+				&& (soundSensor.readValue() > SOUNDTHRESHOLD)){
+			moveStraight(false, 0);
+			return readSensor("sound");
+		}
+		return new ArrayList<String>();
+	}
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
 		boolean forward, right, travel;
 		int radius, distance, speed;
