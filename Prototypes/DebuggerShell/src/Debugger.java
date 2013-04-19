@@ -125,6 +125,10 @@ public class Debugger {
 	}
 
 	public void sendMessage(String message) {
+		if(!isConnected) {
+			shell.printMessage("Not connected to NXT!");
+			return;
+		}
 		try {
 			message += getCheckSum(message);
 			shell.printMessage("Sending message: \"" + message + "\"");
