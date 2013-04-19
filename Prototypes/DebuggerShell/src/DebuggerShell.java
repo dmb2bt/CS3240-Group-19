@@ -267,18 +267,16 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
 		String ac = arg0.getActionCommand();
 
 		if(ac.equals("Establish Connection")){
@@ -298,25 +296,21 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		Component c = arg0.getComponent();
 		if(! (c instanceof JButton)) return;
 		JButton b = (JButton) c;
@@ -334,7 +328,6 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		Component c = arg0.getComponent();
 		if(!(c instanceof JButton)) return;
 		JButton b = (JButton) c;

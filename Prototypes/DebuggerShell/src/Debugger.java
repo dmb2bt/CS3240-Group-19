@@ -96,10 +96,6 @@ public class Debugger {
 							+ latency + "ms.");
 					isConnected = true;
 
-					// DM for debug mode, 2 char for specific command in debug
-					// like
-					// RV for read variable, SM for set mode, SB for set
-					// breakpoint
 					readFromRobot();
 					sendMessage("DMSM000001");
 
@@ -111,6 +107,15 @@ public class Debugger {
 		shell.printMessage("Establishing Connection...");
 		t.start();
 	}
+	
+	public void endConnection() {
+		shell.printMessage("Ending Connection...");
+		sendMessage("DMSM000000");
+		sendMessage("EC00000000");
+		stopReading();
+		isConnected = false;
+		shell.printRobotMessage("Disconnected from robot");
+	}
 
 	public void sendMessage(String message) {
 		try {
@@ -121,6 +126,15 @@ public class Debugger {
 		} catch (Exception e) {
 
 		}
+	}
+
+	public static boolean isNumeric(String number) {
+		try {
+			int i = Integer.parseInt(number);
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+		return true;
 	}
 
 	public void runCommand(String command) {
@@ -137,18 +151,8 @@ public class Debugger {
 
 	}
 
-	public void endConnection() {
-		shell.printMessage("Ending Connection...");
-		sendMessage("DMSM000000");
-		sendMessage("EC00000000");
-		stopReading();
-		isConnected = false;
-		shell.printRobotMessage("Disconnected from robot");
-	}
-
 	public static String getCommandHelp() {
-		// TO DO: create text that will describe the various commands and how to
-		// enter them
+		
 		return "To form each the commands follow the directions below.  Arguments are sepearated by spaces. Case does not matter."
 				+ " \n\nMOVE: Type: 'move [specify direction: forward or backward] [distance in cm]' \nFor example to move forward 120 cm, type: move forward 120"
 				+ " \n\nARC: Type: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\nFor example, to arc up and right, type: arc forward right"
@@ -174,7 +178,6 @@ public class Debugger {
 	}
 
 	public static String createCommand(String cmd) {
-		// TO DO: Create commands based on the input...
 		String message = "";
 		String[] cmdWords = cmd.split(" ");
 		String command = getCommand(cmdWords);
@@ -352,15 +355,6 @@ public class Debugger {
 		return command;
 	}
 
-	public static boolean isNumeric(String number) {
-		try {
-			int i = Integer.parseInt(number);
-		} catch (NumberFormatException nfe) {
-			return false;
-		}
-		return true;
-	}
-
 	public static String createReadSensorMessage(String[] args) {
 		String command = "";
 		if (args.length != 1) {
@@ -383,7 +377,6 @@ public class Debugger {
 	}
 
 	public static String createMalformedMessage() {
-		// TO DO: Create a string that does not correctly follow the protocol
 		String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		String[] commands = new String[8];
 		commands[0] = "MSF0000000";

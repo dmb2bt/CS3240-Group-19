@@ -1,12 +1,93 @@
-
 import java.util.ArrayList;
 
 public class MessageHandler {
 	static final int MESSAGE_LENGTH = 10;
 
 	public MessageHandler() {
+		
 	}
 
+	public String createACK() {
+		System.out.println("ACK created");
+		String ack = "AK00000000";
+		ack += getChecksum(ack);
+		return ack;
+	}
+
+	public String encodeMessage(ArrayList<String> messageData) {
+		if (messageData.size() > 1) {
+			String encoded = "SD";
+			String value = messageData.get(1);
+			switch (messageData.get(0)) {
+			case "touch":
+				encoded += "T";
+				break;
+			case "sound":
+				encoded += "M";
+				break;
+			case "ultrasonic":
+				encoded += "U";
+				break;
+			case "light":
+				encoded += "L";
+				break;
+			default:
+				encoded = "";
+				break;
+			}
+			if (isNumeric(value)) {
+				encoded += getPadding(encoded.length(), value.length()) + value;
+			}
+			encoded += getChecksum(encoded);
+			return encoded;
+		} else
+			return "";
+	}
+
+	//utility method to determine whether a String is a number
+	private boolean isNumeric(String number) {
+		try {
+			int i = Integer.parseInt(number);
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+		return true;
+	}
+
+	private boolean verifyChecksum(String message) {
+		if (message.length() == 11) {
+			byte[] string = message.getBytes();
+			if (getChecksum(message.substring(0, 10)).equals(
+					message.substring(10))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private String getPadding(int messageHeadingLength, int messageTailLength) {
+		String returnString = "";
+		for (int i = 0; i < MESSAGE_LENGTH - messageHeadingLength
+				- messageTailLength; i++) {
+			returnString += "0";
+		}
+		return returnString;
+	}
+
+	private String getChecksum(String message) {
+		int sum = 0;
+		String ret;
+		byte[] buffer = message.getBytes();
+		for (int i = 0; i < buffer.length; i++) {
+			sum += (int) buffer[i];
+		}
+		sum = sum % 256;
+		byte[] checksum = new byte[1];
+		checksum[0] = (byte) sum;
+		ret = new String(checksum);
+		return ret;
+	}
+	
 	public ArrayList<String> decodeMessage(String message) {
 		ArrayList<String> commandData = new ArrayList<String>();
 		if (message.length() != 11) {
@@ -52,85 +133,6 @@ public class MessageHandler {
 		return new ArrayList<String>();
 	}
 
-	public String createACK() {
-		System.out.println("ACK created");
-		String ack = "AK00000000";
-		ack += getChecksum(ack);
-		return ack;
-	}
-
-	public String encodeMessage(ArrayList<String> messageData) {
-		if (messageData.size() > 1) {
-			String encoded = "SD";
-			String value = messageData.get(1);
-			switch (messageData.get(0)) {
-			case "touch":
-				encoded += "T";
-				break;
-			case "sound":
-				encoded += "M";
-				break;
-			case "ultrasonic":
-				encoded += "U";
-				break;
-			case "light":
-				encoded += "L";
-				break;
-			default:
-				encoded = "";
-				break;
-			}
-			if (isNumeric(value)) {
-				encoded += getPadding(encoded.length(), value.length()) + value;
-			}
-			encoded += getChecksum(encoded);
-			return encoded;
-		} else
-			return "";
-	}
-
-	private boolean isNumeric(String number) {
-		try {
-			int i = Integer.parseInt(number);
-		} catch (NumberFormatException nfe) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean verifyChecksum(String message) {
-		if (message.length() == 11) {
-			byte[] string = message.getBytes();
-			if (getChecksum(message.substring(0, 10)).equals(
-					message.substring(10))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private String getPadding(int messageHeadingLength, int messageTailLength) {
-		String returnString = "";
-		for (int i = 0; i < MESSAGE_LENGTH - messageHeadingLength
-				- messageTailLength; i++) {
-			returnString += "0";
-		}
-		return returnString;
-	}
-
-	private String getChecksum(String message) {
-		int sum = 0;
-		String ret;
-		byte[] buffer = message.getBytes();
-		for (int i = 0; i < buffer.length; i++) {
-			sum += (int) buffer[i];
-		}
-		sum = sum % 256;
-		byte[] checksum = new byte[1];
-		checksum[0] = (byte) sum;
-		ret = new String(checksum);
-		return ret;
-	}
 
 	private ArrayList<String> decodeMoveStraight(String parameters) {
 		ArrayList<String> commandData = new ArrayList<String>();
