@@ -65,12 +65,10 @@ public class Activator extends Object {
 					System.out.println(input);
 					ArrayList<String> commandData = messageHandler
 							.decodeMessage(input);
+					storedCommands.push(commandData);
 					if (!hasReceivedAck) {
 						storedCommands.push(commandData);
 					} else {
-						if(storedCommands.size() > 0){
-							
-						}
 						
 						if (commandData.size() < 1) {
 							System.out.println("Invalid Message");
