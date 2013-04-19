@@ -20,6 +20,13 @@ public class Debugger {
 	private static NXTInfo[] info;
 	private static long start;
 	private static long latency;
+	final static int DATA_START = 2;
+	final static int NXT_PIN = 1234;
+	final static int COMMAND_PARAMETER = 0;
+	final static int PARAMETER1_INDEX = 1;
+	final static int PARAMETER2_INDEX = 2;
+	final static int ONLY_COMMAND_LENGTH = 1;
+	final static int COMMAND_AND_PARAM_LENGTH = 2;
 	static Boolean readFlag = true;
 	static Object lock = new Object();
 	private OutputStream os;
@@ -49,7 +56,7 @@ public class Debugger {
 							shell.printRobotMessage("Message from robot: "
 									+ input);
 
-							shell.set(input.charAt(2) + "",
+							shell.set(input.charAt(DATA_START) + "",
 									Integer.parseInt(input.substring(3, 10)));
 						}
 					}
@@ -78,7 +85,7 @@ public class Debugger {
 					} else {
 						connection = NXTCommFactory
 								.createNXTComm(NXTCommFactory.BLUETOOTH);
-						info = connection.search("NXT", 1234);
+						info = connection.search("NXT", NXT_PIN);
 					}
 					if (info.length == 0) {
 						shell.printMessage("Unable to find device");
@@ -183,7 +190,7 @@ public class Debugger {
 		String command = getCommand(cmdWords);
 		String[] args = getCommandArguments(cmdWords);
 
-		if (cmdWords.length < 1) {
+		if (cmdWords.length < ONLY_COMMAND_LENGTH) {
 			return message;
 		} else {
 			if (command.equalsIgnoreCase("move")) {
@@ -232,31 +239,31 @@ public class Debugger {
 	}
 
 	public static String getCommand(String[] words) {
-		return words[0];
+		return words[COMMAND_PARAMETER];
 	}
 
 	public static String createMoveCommand(String[] args) {
 		String command = "MS";
-		if (args.length < 1) {
+		if (args.length < ONLY_COMMAND_LENGTH) {
 			return "";
 		} else {
-			if (args[0].equalsIgnoreCase("forward")
-					|| args[0].equalsIgnoreCase("forwards")) {
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("forward")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("forwards")) {
 				command += "F";
-			} else if (args[0].equalsIgnoreCase("backward")
-					|| args[0].equalsIgnoreCase("backwards")) {
+			} else if (args[COMMAND_PARAMETER].equalsIgnoreCase("backward")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("backwards")) {
 				command += "B";
 			}
-			if (args.length == 2) {
-				if (isNumeric(args[1])) {
-					for (int i = 0; i < 7 - args[1].length(); i++) {
+			if (args.length == COMMAND_AND_PARAM_LENGTH) {
+				if (isNumeric(args[PARAMETER1_INDEX])) {
+					for (int i = 0; i < 7 - args[PARAMETER1_INDEX].length(); i++) {
 						command += "0";
 					}
-					command += args[1];
+					command += args[PARAMETER1_INDEX];
 				} else {
 					return "";
 				}
-			} else if (args.length > 2) {
+			} else if (args.length > COMMAND_AND_PARAM_LENGTH) {
 				return "";
 			} else {
 				command = addTrailingZeros(command);
@@ -267,22 +274,22 @@ public class Debugger {
 
 	public static String createArcCommand(String[] args) {
 		String command = "MA";
-		if (args.length < 1) {
+		if (args.length < ONLY_COMMAND_LENGTH) {
 			return "";
 		} else {
-			if (args[0].equalsIgnoreCase("forward")
-					|| args[0].equalsIgnoreCase("forwards")) {
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("forward")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("forwards")) {
 				command += "F";
-			} else if (args[0].equalsIgnoreCase("backward")
-					|| args[0].equalsIgnoreCase("backwards")) {
+			} else if (args[COMMAND_PARAMETER].equalsIgnoreCase("backward")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("backwards")) {
 				command += "B";
 			} else {
 				return "";
 			}
-			if (args.length >= 2) {
-				if (args[1].equalsIgnoreCase("left")) {
+			if (args.length >= COMMAND_AND_PARAM_LENGTH) {
+				if (args[PARAMETER1_INDEX].equalsIgnoreCase("left")) {
 					command += "L";
-				} else if (args[1].equalsIgnoreCase("right")) {
+				} else if (args[PARAMETER1_INDEX].equalsIgnoreCase("right")) {
 					command += "R";
 				} else {
 					return "";
@@ -296,22 +303,22 @@ public class Debugger {
 
 	public static String createTurnCommand(String[] args) {
 		String command = "TN";
-		if (args.length < 1) {
+		if (args.length < ONLY_COMMAND_LENGTH) {
 			return "";
 		} else {
-			if (args[0].equalsIgnoreCase("right")) {
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("right")) {
 				command += "R";
-			} else if (args[0].equalsIgnoreCase("left")) {
+			} else if (args[COMMAND_PARAMETER].equalsIgnoreCase("left")) {
 				command += "L";
 			} else {
 				return "";
 			}
-			if (args.length > 1) {
-				if (isNumeric(args[1])) {
-					for (int i = 0; i < 7 - args[1].length(); i++) {
+			if (args.length > ONLY_COMMAND_LENGTH) {
+				if (isNumeric(args[PARAMETER1_INDEX])) {
+					for (int i = 0; i < 7 - args[PARAMETER1_INDEX].length(); i++) {
 						command += "0";
 					}
-					command += args[1];
+					command += args[PARAMETER1_INDEX];
 				} else {
 					return "";
 				}
@@ -331,23 +338,23 @@ public class Debugger {
 		if (args.length != 3) {
 			return "";
 		} else {
-			if (args[0].equalsIgnoreCase("a") || args[0].equalsIgnoreCase("b")
-					|| args[0].equalsIgnoreCase("c")
-					|| args[0].equalsIgnoreCase("d")) {
-				command += args[0].toUpperCase();
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("a") || args[COMMAND_PARAMETER].equalsIgnoreCase("b")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("c")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("d")) {
+				command += args[COMMAND_PARAMETER].toUpperCase();
 			} else {
 				return "";
 			}
-			if (args[1].equalsIgnoreCase("t") || args[1].equalsIgnoreCase("r")) {
-				command += args[1].toUpperCase();
+			if (args[PARAMETER1_INDEX].equalsIgnoreCase("t") || args[PARAMETER1_INDEX].equalsIgnoreCase("r")) {
+				command += args[PARAMETER1_INDEX].toUpperCase();
 			} else {
 				return "";
 			}
-			if (isNumeric(args[2])) {
-				for (int i = 0; i < 6 - args[2].length(); i++) {
+			if (isNumeric(args[PARAMETER2_INDEX])) {
+				for (int i = 0; i < 6 - args[PARAMETER2_INDEX].length(); i++) {
 					command += "0";
 				}
-				command += args[2];
+				command += args[PARAMETER2_INDEX];
 			} else {
 				return "";
 			}
@@ -357,16 +364,16 @@ public class Debugger {
 
 	public static String createReadSensorMessage(String[] args) {
 		String command = "";
-		if (args.length != 1) {
+		if (args.length != ONLY_COMMAND_LENGTH) {
 			return "";
 		}
-		if (args[0].equalsIgnoreCase("all")) {
+		if (args[COMMAND_PARAMETER].equalsIgnoreCase("all")) {
 			command = addTrailingZeros("RA");
 		} else {
-			if (args[0].equalsIgnoreCase("u") || args[0].equalsIgnoreCase("t")
-					|| args[0].equalsIgnoreCase("m")
-					|| args[0].equalsIgnoreCase("l")) {
-				command = addTrailingZeros("RS" + args[0].toUpperCase());
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("u") || args[COMMAND_PARAMETER].equalsIgnoreCase("t")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("m")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("l")) {
+				command = addTrailingZeros("RS" + args[COMMAND_PARAMETER].toUpperCase());
 			}
 		}
 		return command;
