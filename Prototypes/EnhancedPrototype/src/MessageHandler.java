@@ -1,10 +1,11 @@
+//CS3240g8b 
 import java.util.ArrayList;
 
 public class MessageHandler {
-	static final int MESSAGE_LENGTH = 10;
+	static final int MESSAGE_LENGTH = 11;
 
 	public MessageHandler() {
-		
+
 	}
 
 	public String createACK() {
@@ -87,10 +88,10 @@ public class MessageHandler {
 		ret = new String(checksum);
 		return ret;
 	}
-	
+
 	public ArrayList<String> decodeMessage(String message) {
 		ArrayList<String> commandData = new ArrayList<String>();
-		if (message.length() != 11) {
+		if (message.length() != MESSAGE_LENGTH) {
 			return commandData;
 		} else {
 			if (verifyChecksum(message)) {
@@ -115,13 +116,14 @@ public class MessageHandler {
 				case "SS":
 					commandData = decodeSetSpeed(params);
 					return commandData;
-				case "RA":
-					break;
 				case "EC":
 					commandData.add("exit");
 					return commandData;
 				case "DM":
 					commandData = decodeDebugMode(params);
+					return commandData;
+				case "SW":
+					commandData = decodeSwing(params);
 					return commandData;
 				default:
 					return new ArrayList<String>();
@@ -182,6 +184,16 @@ public class MessageHandler {
 	}
 
 	private ArrayList<String> decodeStop(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("swing");
+		String params = parameters.substring(0);
+		if (!(isNumeric(params) && Integer.parseInt(params) == 0)) {
+			return new ArrayList<String>();
+		}
+		return commandData;
+	}
+	
+	private ArrayList<String> decodeSwing(String parameters) {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("stop");
 		String params = parameters.substring(0);
