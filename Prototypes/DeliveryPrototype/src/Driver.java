@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+import lejos.nxt.Button;
 import lejos.nxt.LightSensor;
 import lejos.nxt.Motor;
 import lejos.nxt.SensorPort;
@@ -24,6 +25,25 @@ public class Driver {
 	final int SOUNDTHRESHOLD = 50;
 	private boolean DRIVING = false;
 	private boolean hasStopped = false;
+	private boolean moveBreakpoint = false;
+	private boolean moveForwardBreakpoint = false;
+	private boolean moveBackwardBreakpoint = false;
+	private boolean arcBreakpoint = false;
+	private boolean arcForwardBreakpoint = false;
+	private boolean arcBackwardBreakpoint = false;
+	private boolean arcForwardRightBreakpoint = false;
+	private boolean arcForwardLeftBreakpoint = false;
+	private boolean arcBackwardRightBreakpoint = false;
+	private boolean arcBackwardLeftBreakpoint = false;
+	private boolean setspeedBreakpoint = false;
+	private boolean readSensorBreakpoint = false;
+	private boolean readSensorTouchBreakpoint = false;
+	private boolean readSensorUltrasonicBreakpoint = false;
+	private boolean readSensorLightBreakpoint = false;
+	private boolean readSensorMicrophoneBreakpoint = false;
+	private boolean turnBreakpoint = false;
+	private boolean turnRightBreakpoint = false;
+	private boolean turnLeftBreakpoint = false;
 
 	private TouchSensor touchSensor;
 	private UltrasonicSensor ultrasonicSensor;
@@ -40,8 +60,8 @@ public class Driver {
 		soundSensor = new SoundSensor(SensorPort.S4);
 
 	}
-	public ArrayList<String> safetySense()
-	{
+
+	public ArrayList<String> safetySense() {
 		if (hasStopped) {
 			if (ultrasonicSensor.getDistance() > SAFEDISTANCE)
 				hasStopped = false;
@@ -61,13 +81,13 @@ public class Driver {
 			Sound.playNote(Sound.FLUTE, 130, 500);
 			stop();
 			return readSensor("sound");
-		} else if (!DRIVING
-				&& (soundSensor.readValue() > SOUNDTHRESHOLD)){
+		} else if (!DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD)) {
 			moveStraight(false, 0);
 			return readSensor("sound");
 		}
 		return new ArrayList<String>();
 	}
+
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
 		boolean forward, right, travel;
 		int radius, distance, speed;
@@ -121,6 +141,8 @@ public class Driver {
 			speed = Integer.parseInt(command.get(PARAMETER2_INDEX));
 			setSpeed(motor, travel, speed);
 			return new ArrayList<String>();
+		case "breakpoint":
+			implementBreakpoint(command);
 		default:
 			noOp();
 			return new ArrayList<String>();
@@ -129,6 +151,10 @@ public class Driver {
 	}
 
 	private boolean setSpeed(String motor, boolean travel, int speed) {
+		if (setspeedBreakpoint) {
+			System.out.println("Hit Breakpoint");
+			Button.ENTER.waitForPressAndRelease();
+		}
 		switch (motor) {
 		case "motora":
 			return true;
@@ -150,7 +176,15 @@ public class Driver {
 
 	private boolean moveStraight(boolean forward, int distance) {
 		DRIVING = true;
+		if (moveBreakpoint) {
+			System.out.println("Hit Breakpoint");
+			Button.ENTER.waitForPressAndRelease();
+		}
 		if (forward) {
+			if (moveForwardBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (distance == 0) {
 				pilot.forward();
 				return true;
@@ -159,6 +193,10 @@ public class Driver {
 				return true;
 			}
 		} else {
+			if (moveBackwardBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (distance == 0) {
 				pilot.backward();
 				return true;
@@ -171,9 +209,21 @@ public class Driver {
 
 	private boolean moveArc(boolean forward, boolean right, int distance,
 			int radius) {
+		if (arcBreakpoint) {
+			System.out.println("Hit Breakpoint");
+			Button.ENTER.waitForPressAndRelease();
+		}
 		DRIVING = true;
 		if (forward) {
+			if (arcForwardBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (right) {
+				if (arcForwardRightBreakpoint) {
+					System.out.println("Hit Breakpoint");
+					Button.ENTER.waitForPressAndRelease();
+				}
 				if (distance == 0 && radius == 0) {
 					pilot.arcForward(-DEFAULT_RADIUS);
 					return true;
@@ -182,6 +232,10 @@ public class Driver {
 					return true;
 				}
 			} else {
+				if (arcForwardLeftBreakpoint) {
+					System.out.println("Hit Breakpoint");
+					Button.ENTER.waitForPressAndRelease();
+				}
 				if (distance == 0 && radius == 0) {
 					pilot.arcForward(DEFAULT_RADIUS);
 					return true;
@@ -191,7 +245,15 @@ public class Driver {
 				}
 			}
 		} else {
+			if (arcBackwardBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (right) {
+				if (arcBackwardRightBreakpoint) {
+					System.out.println("Hit Breakpoint");
+					Button.ENTER.waitForPressAndRelease();
+				}
 				if (distance == 0 && radius == 0) {
 					pilot.arcBackward(-DEFAULT_RADIUS);
 					return true;
@@ -200,6 +262,10 @@ public class Driver {
 					return true;
 				}
 			} else {
+				if (arcBackwardLeftBreakpoint) {
+					System.out.println("Hit Breakpoint");
+					Button.ENTER.waitForPressAndRelease();
+				}
 				if (distance == 0 && radius == 0) {
 					pilot.arcBackward(DEFAULT_RADIUS);
 					return true;
@@ -212,8 +278,16 @@ public class Driver {
 	}
 
 	private boolean turn(boolean right, int radius) {
+		if (turnBreakpoint) {
+			System.out.println("Hit Breakpoint");
+			Button.ENTER.waitForPressAndRelease();
+		}
 		DRIVING = true;
 		if (right) {
+			if (turnRightBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (radius == 0) {
 				pilot.rotateRight();
 				return true;
@@ -222,6 +296,10 @@ public class Driver {
 				return true;
 			}
 		} else {
+			if (turnLeftBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (radius == 0) {
 				pilot.rotateLeft();
 				return true;
@@ -243,22 +321,42 @@ public class Driver {
 	}
 
 	private ArrayList<String> readSensor(String sensorType) {
+		if (readSensorBreakpoint) {
+			System.out.println("Hit Breakpoint");
+			Button.ENTER.waitForPressAndRelease();
+		}
 		ArrayList<String> returnList = new ArrayList<String>();
 		returnList.add(sensorType);
 		switch (sensorType) {
 		case "touch":
+			if (readSensorTouchBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			if (touchSensor.isPressed())
 				returnList.add("1");
 			else
 				returnList.add("0");
 			break;
 		case "ultrasonic":
+			if (readSensorUltrasonicBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			returnList.add(Integer.toString(ultrasonicSensor.getDistance()));
 			break;
 		case "sound":
+			if (readSensorMicrophoneBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			returnList.add(Integer.toString(soundSensor.readValue()));
 			break;
 		case "light":
+			if (readSensorLightBreakpoint) {
+				System.out.println("Hit Breakpoint");
+				Button.ENTER.waitForPressAndRelease();
+			}
 			returnList.add(Integer.toString(lightSensor
 					.getNormalizedLightValue()));
 			break;
@@ -268,4 +366,117 @@ public class Driver {
 		return returnList;
 	}
 
+	private void implementBreakpoint(ArrayList<String> command) {
+		boolean breakpointValue;
+		switch (command.get(command.size() - 1)) {
+		case "true":
+			breakpointValue = true;
+			break;
+		default:
+			breakpointValue = false;
+			break;
+		}
+		if (command.size() > 2) {
+			switch (command.get(1)) {
+			case "move":
+				if (command.size() > 3) {
+					switch (command.get(2)) {
+					case "forward":
+						moveForwardBreakpoint = breakpointValue;
+						break;
+					case "backward":
+						moveBackwardBreakpoint = breakpointValue;
+						break;
+					default:
+						break;
+					}
+					break;
+				}
+				moveBreakpoint = breakpointValue;
+				break;
+			case "arc":
+				if (command.size() > 3) {
+					switch (command.get(2)) {
+					case "forward":
+						if (command.size() > 4) {
+							switch (command.get(3)) {
+							case "right":
+								arcForwardRightBreakpoint = breakpointValue;
+								break;
+							case "left":
+								arcForwardLeftBreakpoint = breakpointValue;
+								break;
+							default:
+								break;
+							}
+							break;
+						}
+						arcForwardBreakpoint = breakpointValue;
+						break;
+					case "backward":
+						if (command.size() > 4) {
+							switch (command.get(3)) {
+							case "right":
+								arcBackwardRightBreakpoint = breakpointValue;
+								break;
+							case "left":
+								arcBackwardLeftBreakpoint = breakpointValue;
+								break;
+							default:
+								break;
+							}
+							break;
+						}
+						arcBackwardBreakpoint = breakpointValue;
+						break;
+					default:
+						break;
+					}
+				}
+			case "turn":
+				if (command.size() > 3) {
+					switch (command.get(2)) {
+					case "right":
+						turnRightBreakpoint = breakpointValue;
+						break;
+					case "left":
+						turnLeftBreakpoint = breakpointValue;
+						break;
+					default:
+						break;
+					}
+					break;
+				}
+				turnBreakpoint = breakpointValue;
+				break;
+			case "speed":
+				setspeedBreakpoint = breakpointValue;
+				break;
+			case "read":
+				if (command.size() > 3) {
+					switch (command.get(2)) {
+					case "touch":
+						readSensorTouchBreakpoint = breakpointValue;
+						break;
+					case "ultrasonic":
+						readSensorUltrasonicBreakpoint = breakpointValue;
+						break;
+					case "microphone":
+						readSensorMicrophoneBreakpoint = breakpointValue;
+						break;
+					case "light":
+						readSensorLightBreakpoint = breakpointValue;
+						break;
+					default:
+						break;
+					}
+					break;
+				}
+				readSensorBreakpoint = breakpointValue;
+				break;
+			default:
+				break;
+			}
+		}
+	}
 }

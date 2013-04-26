@@ -114,17 +114,15 @@ public class Activator extends Object {
 		try {
 			System.out.println("Send Message");
 			System.out.println(message);
-			hasReceivedAck = false;
-
-			timer = new Timer(30000, new TimerListener() {
-
-				@Override
-				public void timedOut() {
-					timer.stop();
-					sendMessage(message);
-				}
-
-			});
+//			hasReceivedAck = false;
+//
+//			timer = new Timer(30000, new TimerListener() {
+//				public void timedOut() {
+//					timer.stop();
+//					sendMessage(message);
+//				}
+//
+//			});
 
 			writePipe.write(message.getBytes());
 			writePipe.flush();
