@@ -25,14 +25,6 @@ public class Activator extends Object {
 	private static Timer timer;
 	private static Queue<ArrayList<String>> storedCommands;
 
-	/**
-	 * Note to self:
-	 * 
-	 * set timer to 30 seconds and interrupt it if an ack is received create a
-	 * buffer
-	 * 
-	 **/
-
 	public static void main(String[] args) {
 		boolean connected = false;
 		do {
@@ -63,29 +55,30 @@ public class Activator extends Object {
 				if (count > 0) {
 					input = (new String(buffer)).substring(0, 11);
 					System.out.println(input);
-					ArrayList<String> commandData = messageHandler
+					ArrayList<String> commandDataIn = messageHandler
 							.decodeMessage(input);
-					storedCommands.push(commandData);
-					if (!hasReceivedAck) {
-						storedCommands.push(commandData);
-					} else {
-						
-						if (commandData.size() < 1) {
-							System.out.println("Invalid Message");
-						} else {
-							sendMessage(messageHandler.createACK());
+					storedCommands.push(commandDataIn);
+					if (hasReceivedAck) {
+						while(!storedCommands.isEmpty()){
+							ArrayList<String> commandData = (ArrayList<String>) storedCommands.pop();
+							if (commandData.size() < 1) {
+								System.out.println("Invalid Message");
+							} else {
+								sendMessage(messageHandler.createACK());
+							}
+							if (commandData.get(0).equals("exit"))
+								System.exit(0);
+							if (commandData.get(0).equalsIgnoreCase("mode"))
+								debugMode = Boolean.parseBoolean(commandData
+										.get(1));
+							ArrayList<String> sensorData = driver
+									.implementCommand(commandData);
+							if (sensorData.size() > 1) {
+								sendMessage(messageHandler
+										.encodeMessage(sensorData));
+							}
 						}
-						if (commandData.get(0).equals("exit"))
-							System.exit(0);
-						if (commandData.get(0).equalsIgnoreCase("mode"))
-							debugMode = Boolean
-									.parseBoolean(commandData.get(1));
-						ArrayList<String> sensorData = driver
-								.implementCommand(commandData);
-						if (sensorData.size() > 1) {
-							sendMessage(messageHandler
-									.encodeMessage(sensorData));
-						}
+						storedCommands = new Queue<ArrayList<String>>();
 					}
 				}
 				Thread.sleep(10);
@@ -114,18 +107,16 @@ public class Activator extends Object {
 		try {
 			System.out.println("Send Message");
 			System.out.println(message);
-			hasReceivedAck = false;
-
-			timer = new Timer(30000, new TimerListener() {
-
-				@Override
-				public void timedOut() {
-					timer.stop();
-					sendMessage(message);
-				}
-
-			});
-
+			if (!message.equals(messageHandler.createACK())) {
+				hasReceivedAck = false;
+				timer = new Timer(30000, new TimerListener() {
+					@Override
+					public void timedOut() {
+						timer.stop();
+						sendMessage(message);
+					}
+				});
+			}
 			writePipe.write(message.getBytes());
 			writePipe.flush();
 		} catch (IOException e) {
