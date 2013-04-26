@@ -1,3 +1,4 @@
+//CS3240g8b
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -11,7 +12,7 @@ import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 
 public class Debugger {
-	private DebuggerShell shell;
+	private static DebuggerShell shell;
 	private boolean isConnected;
 	private Thread readThread;
 
@@ -69,8 +70,10 @@ public class Debugger {
 	}
 
 	public void stopReading() {
-		if(readThread == null) return;
-		else if(readThread.isAlive()) readThread.stop();
+		if (readThread == null)
+			return;
+		else if (readThread.isAlive())
+			readThread.stop();
 	}
 
 	public void establishConnection() {
@@ -114,7 +117,7 @@ public class Debugger {
 		shell.printMessage("Establishing Connection...");
 		t.start();
 	}
-	
+
 	public void endConnection() {
 		shell.printMessage("Ending Connection...");
 		sendMessage("DMSM000000");
@@ -125,7 +128,7 @@ public class Debugger {
 	}
 
 	public void sendMessage(String message) {
-		if(!isConnected) {
+		if (!isConnected) {
 			shell.printMessage("Not connected to NXT!");
 			return;
 		}
@@ -148,32 +151,6 @@ public class Debugger {
 		return true;
 	}
 
-	public void runCommand(String command) {
-		if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("?")) {
-			shell.printMessage(getCommandHelp());
-		} else if (!isConnected) {
-			shell.printMessage("Robot is not connected!");
-		} else if (command.equalsIgnoreCase("exit")) {
-			endConnection();
-		} else {
-			String message = createCommand(command);
-			sendMessage(message);
-		}
-
-	}
-
-	public static String getCommandHelp() {
-		
-		return "To form each the commands follow the directions below.  Arguments are sepearated by spaces. Case does not matter."
-				+ " \n\nMOVE: Type: 'move [specify direction: forward or backward] [distance in cm]' \nFor example to move forward 120 cm, type: move forward 120"
-				+ " \n\nARC: Type: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\nFor example, to arc up and right, type: arc forward right"
-				+ " \n\nTURN: Type: 'turn [specify direction: right or left] [specify number of degrees to turn]"
-				+ " \n\nSTOP: Type: 'stop'"
-				+ " \n\nSET SPEED: Type: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [t or r for type of speed] [number of new speed].\nFor example to set motor a to speed 30 type: setspeed a 30"
-				+ " \n\nREAD: Type: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \nFor example to read information from the light sensor type: read l.  \nTo read information from all sensors type: read all"
-				+ " \n\nNONE: To create NoOp message type: none";
-	}
-
 	public static String getCheckSum(String str) {
 		int sum = 0;
 		String ret;
@@ -188,41 +165,40 @@ public class Debugger {
 		return ret;
 	}
 
-	public static String createCommand(String cmd) {
-		String message = "";
-		String[] cmdWords = cmd.split(" ");
-		String command = getCommand(cmdWords);
-		String[] args = getCommandArguments(cmdWords);
+	public static String getCommandHelp() {
 
-		if (cmdWords.length < ONLY_COMMAND_LENGTH) {
-			return message;
-		} else {
-			if (command.equalsIgnoreCase("move")) {
-				message = createMoveCommand(args);
-			} else if (command.equalsIgnoreCase("arc")) {
-				message = createArcCommand(args);
-			} else if (command.equalsIgnoreCase("turn")) {
-				message = createTurnCommand(args);
-			} else if (command.equalsIgnoreCase("stop")) {
-				message = createStopCommand();
-			} else if (command.equalsIgnoreCase("setspeed")) {
-				message = createSetSpeedMessage(args);
-			} else if (command.equalsIgnoreCase("read")) {
-				message = createReadSensorMessage(args);
-			} else if (command.equalsIgnoreCase("none")) {
-				message = createNoOpMessage();
-			}
-		}
-		return message;
+		return "To form each the commands follow the directions below.  Arguments are sepearated by spaces. Case does not matter."
+				+ " \n\nMOVE: Type: 'move [specify direction: forward or backward] [distance in cm]' \nFor example to move forward 120 cm, type: move forward 120"
+				+ " \n\nARC: Type: 'arc [specify direction: forward or backward] [specify direction to arc in: left of right].\nFor example, to arc up and right, type: arc forward right"
+				+ " \n\nTURN: Type: 'turn [specify direction: right or left] [specify number of degrees to turn]"
+				+ " \n\nSTOP: Type: 'stop'"
+				+ " \n\nSET SPEED: Type: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [t or r for type of speed] [number of new speed].\nFor example to set motor a to speed 30 type: setspeed a 30"
+				+ " \n\nREAD: Type: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \nFor example to read information from the light sensor type: read l.  \nTo read information from all sensors type: read all"
+				+ " \n\nNONE: To create NoOp message type: none"
+				+ " \n\nSWING: Type: 'swing'";
 	}
+	
+	public void runCommand(String command) {
+		if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("?")) {
+			shell.printMessage(getCommandHelp());
+		} else if (!isConnected) {
+			shell.printMessage("Robot is not connected!");
+		} else if (command.equalsIgnoreCase("exit")) {
+			endConnection();
+		} else {
+			String message = createCommand(command);
+			sendMessage(message);
+		}
 
-	private static String addPaddingZeros(String command, String endOfCommand){
-		for(int i = command.length() - 1; i < 9-endOfCommand.length(); i++){
+	}
+	
+	private static String addPaddingZeros(String command, String endOfCommand) {
+		for (int i = command.length() - 1; i < 9 - endOfCommand.length(); i++) {
 			command += "0";
 		}
 		return command + endOfCommand;
 	}
-	
+
 	private static String addTrailingZeros(String message) {
 		if (message.length() >= 10)
 			return message;
@@ -232,6 +208,40 @@ public class Debugger {
 			}
 			return message;
 		}
+	}
+
+	public static String createCommand(String cmd) {
+		String message = "";
+		String[] cmdWords = cmd.toLowerCase().split(" ");
+		String command = getCommand(cmdWords);
+		String[] args = getCommandArguments(cmdWords);
+
+		if (cmdWords.length < ONLY_COMMAND_LENGTH) {
+			return message;
+		} else {
+			if (command.equalsIgnoreCase("move")) {
+				message = createMoveMessage(args);
+			} else if (command.equalsIgnoreCase("arc")) {
+				message = createArcMessage(args);
+			} else if (command.equalsIgnoreCase("turn")) {
+				message = createTurnMessage(args);
+			} else if (command.equalsIgnoreCase("stop")) {
+				message = createStopMessage();
+			} else if (command.equalsIgnoreCase("setspeed")) {
+				message = createSetSpeedMessage(args);
+			} else if (command.equalsIgnoreCase("read")) {
+				message = createReadSensorMessage(args);
+			} else if (command.equalsIgnoreCase("none")) {
+				message = createNoOpMessage();
+			} else if (command.equalsIgnoreCase("swing")) {
+				message = createSwingMessage();
+			} else if (command.equalsIgnoreCase("setbreakpoint")) {
+				message = createBreakpointMessage(args, true);
+			} else if (command.equalsIgnoreCase("removebreakpoint")) {
+				message = createBreakpointMessage(args, false);
+			}
+		}
+		return message;
 	}
 
 	public static String[] getCommandArguments(String[] words) {
@@ -246,7 +256,7 @@ public class Debugger {
 		return words[COMMAND_PARAMETER];
 	}
 
-	public static String createMoveCommand(String[] args) {
+	public static String createMoveMessage(String[] args) {
 		String command = "MS";
 		if (args.length < ONLY_COMMAND_LENGTH) {
 			return "";
@@ -276,7 +286,7 @@ public class Debugger {
 		return command;
 	}
 
-	public static String createArcCommand(String[] args) {
+	public static String createArcMessage(String[] args) {
 		String command = "MA";
 		if (args.length < ONLY_COMMAND_LENGTH) {
 			return "";
@@ -305,7 +315,7 @@ public class Debugger {
 		return command;
 	}
 
-	public static String createTurnCommand(String[] args) {
+	public static String createTurnMessage(String[] args) {
 		String command = "TN";
 		if (args.length < ONLY_COMMAND_LENGTH) {
 			return "";
@@ -333,8 +343,12 @@ public class Debugger {
 		return command;
 	}
 
-	public static String createStopCommand() {
+	public static String createStopMessage() {
 		return addTrailingZeros("ST");
+	}
+	
+	public static String createSwingMessage() {
+		return addTrailingZeros("SW");
 	}
 
 	public static String createSetSpeedMessage(String[] args) {
@@ -342,14 +356,16 @@ public class Debugger {
 		if (args.length != 3) {
 			return "";
 		} else {
-			if (args[COMMAND_PARAMETER].equalsIgnoreCase("a") || args[COMMAND_PARAMETER].equalsIgnoreCase("b")
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("a")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("b")
 					|| args[COMMAND_PARAMETER].equalsIgnoreCase("c")
 					|| args[COMMAND_PARAMETER].equalsIgnoreCase("d")) {
 				command += args[COMMAND_PARAMETER].toUpperCase();
 			} else {
 				return "";
 			}
-			if (args[PARAMETER1_INDEX].equalsIgnoreCase("t") || args[PARAMETER1_INDEX].equalsIgnoreCase("r")) {
+			if (args[PARAMETER1_INDEX].equalsIgnoreCase("t")
+					|| args[PARAMETER1_INDEX].equalsIgnoreCase("r")) {
 				command += args[PARAMETER1_INDEX].toUpperCase();
 			} else {
 				return "";
@@ -374,10 +390,12 @@ public class Debugger {
 		if (args[COMMAND_PARAMETER].equalsIgnoreCase("all")) {
 			command = addTrailingZeros("RA");
 		} else {
-			if (args[COMMAND_PARAMETER].equalsIgnoreCase("u") || args[COMMAND_PARAMETER].equalsIgnoreCase("t")
+			if (args[COMMAND_PARAMETER].equalsIgnoreCase("u")
+					|| args[COMMAND_PARAMETER].equalsIgnoreCase("t")
 					|| args[COMMAND_PARAMETER].equalsIgnoreCase("m")
 					|| args[COMMAND_PARAMETER].equalsIgnoreCase("l")) {
-				command = addTrailingZeros("RS" + args[COMMAND_PARAMETER].toUpperCase());
+				command = addTrailingZeros("RS"
+						+ args[COMMAND_PARAMETER].toUpperCase());
 			}
 		}
 		return command;
@@ -387,39 +405,97 @@ public class Debugger {
 		return "0000000000";
 	}
 
-	public static String createMalformedMessage() {
-		String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		String[] commands = new String[8];
-		commands[0] = "MSF0000000";
-		commands[1] = "MAFL090000";
-		commands[2] = "TNR0000000";
-		commands[3] = "ST00000000";
-		commands[4] = "SSA0000000";
-		commands[5] = "RA00000000";
-		commands[6] = "RSU0000000";
-		commands[7] = "0000000000";
-		int pick = (int) (Math.random() * commands.length);
-		String rand = commands[pick];
-		pick = (int) (Math.random() * rand.length());
-		int replace = (int) (Math.random() * 26);
-		String wrongString = "" + alpha.charAt(replace);
-		String malformed = rand.substring(0, pick);
-		malformed += wrongString;
-		malformed += rand.substring(pick + 1, rand.length());
+	private static String createBreakpointMessage(String[] parameters,
+			boolean value) {
+		String message = "DMSB";
+		if (parameters.length < 1) {
+			return "";
+		} else {
+			switch (parameters[0]) {
+			case "move":
+				message += "MV";
+				if (parameters.length == 2) {
+					switch (parameters[1]) {
+					case "forward":
+						message += "F";
+						break;
+					case "backward":
+						message += "B";
+						break;
+					}
+				}
+				break;
+			case "arc":
+				message += "MA";
+				if (parameters.length >= 2) {
+					switch (parameters[1]) {
+					case "forward":
+						message += "F";
+						break;
+					case "backward":
+						message += "B";
+						break;
+					}
+					if (parameters.length >= 3) {
+						switch (parameters[2]) {
+						case "left":
+							message += "L";
+							break;
+						case "right":
+							message += "R";
+							break;
+						}
+					}
+				}
+				break;
 
-		int size = (int) (Math.random() * 3);
-		if (size == 0) {
-			int length = (int) (Math.random() * 9 + 1);
-			malformed = malformed.substring(0, length);
-		} else if (size == 2) {
-			int length = (int) (Math.random() * 255 + 1);
-			for (int i = 0; i < length; i++)
-				;
-			malformed += "0";
+			case "setspeed":
+				message += "SS";
+				break;
+			case "read":
+				message += "RS";
+				if (parameters.length >= 2) {
+					switch (parameters[1]) {
+					case "touch":
+						message += "T";
+						break;
+					case "ultrasonic":
+						message += "U";
+						break;
+					case "microphone":
+						message += "M";
+						break;
+					case "light":
+						message += "L";
+						break;
+					}
+				}
+				break;
+			case "turn":
+				message += "TN";
+				if (parameters.length >= 2) {
+					switch (parameters[1]) {
+					case "right":
+						message += "R";
+						break;
+					case "left":
+						message += "L";
+						break;
+					}
+				}
+				break;
+			}
 		}
-		return malformed;
+		if (value) {
+			message = addPaddingZeros(message, "1");
+		} else {
+			message = addPaddingZeros(message, "0");
+		}
+		message += getCheckSum(message);
+		shell.printMessage("Message Length: " + message.length());
+		return message;
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		Debugger d = new Debugger();
 	}

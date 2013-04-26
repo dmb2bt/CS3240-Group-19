@@ -1,3 +1,4 @@
+//CS3240g8b
 import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.text.AttributeSet;
@@ -333,7 +334,7 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		JButton b = (JButton) c;
 		String ac = b.getActionCommand();
 		if(ac.equals("Forward") || ac.equals("Backward") || ac.equals("Left") || ac.equals("Right")){
-			debugger.sendMessage(debugger.createStopCommand());
+			debugger.sendMessage(debugger.createStopMessage());
 		}
 	}
 }

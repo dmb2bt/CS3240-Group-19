@@ -1,3 +1,4 @@
+//CS3240g8b
 import java.util.ArrayList;
 
 import lejos.nxt.LightSensor;
@@ -21,7 +22,12 @@ public class Driver {
 	final int PARAMETER3_INDEX = 3;
 	final int PARAMETER4_INDEX = 4;
 	final int SAFEDISTANCE = 50;
-	final int SOUNDTHRESHOLD = 50;
+	final int SOUNDTHRESHOLD = 85;
+	final int INITIAL_ROTATE_SPEED = 90;
+	final int SWING_FORWARD_ANGLE = 90;
+	final int SWING_BACKWARD_ANGLE = -90;
+	final double WHEEL_DIAMETER = 2.25f;
+	final double TRACK_WIDTH = 5.5f;
 	private boolean DRIVING = false;
 	private boolean hasStopped = false;
 
@@ -31,8 +37,9 @@ public class Driver {
 	private SoundSensor soundSensor;
 
 	public Driver() {
-		pilot = new DifferentialPilot(2.25f, 5.5f, Motor.B, Motor.C);
-		pilot.setRotateSpeed(90);
+		pilot = new DifferentialPilot(WHEEL_DIAMETER, TRACK_WIDTH, Motor.B, Motor.C);
+		pilot.setRotateSpeed(INITIAL_ROTATE_SPEED);
+		Motor.C.setSpeed(INITIAL_ROTATE_SPEED);
 
 		touchSensor = new TouchSensor(SensorPort.S1);
 		ultrasonicSensor = new UltrasonicSensor(SensorPort.S2);
@@ -57,19 +64,20 @@ public class Driver {
 			stop();
 			return readSensor("touch");
 		}
+		
 		if (DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD)) {
-			Sound.playNote(Sound.FLUTE, 130, 500);
+			Sound.beepSequenceUp();
 			stop();
 			return readSensor("sound");
-		} else if (!DRIVING
-				&& (soundSensor.readValue() > SOUNDTHRESHOLD)){
+		} else if (!DRIVING && (soundSensor.readValue() > SOUNDTHRESHOLD)){
 			moveStraight(false, 0);
 			return readSensor("sound");
 		}
 		return new ArrayList<String>();
 	}
+	
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
-		boolean forward, right, travel;
+		boolean forward, right, setTravelSpeed;
 		int radius, distance, speed;
 		String sensor, motor;
 		switch (command.get(COMMAND_TYPE_INDEX)) {
@@ -115,11 +123,14 @@ public class Driver {
 		case "setspeed":
 			motor = command.get(PARAMETER1_INDEX);
 			if (command.get(PARAMETER2_INDEX).equalsIgnoreCase("travel"))
-				travel = true;
+				setTravelSpeed = true;
 			else
-				travel = false;
+				setTravelSpeed = false;
 			speed = Integer.parseInt(command.get(PARAMETER2_INDEX));
-			setSpeed(motor, travel, speed);
+			setSpeed(motor, setTravelSpeed, speed);
+			return new ArrayList<String>();
+		case "swing":
+			swing();
 			return new ArrayList<String>();
 		default:
 			noOp();
@@ -127,17 +138,26 @@ public class Driver {
 		}
 
 	}
+	
+	private boolean swing(){
+		Motor.C.rotateTo(SWING_FORWARD_ANGLE);
+		Motor.C.rotateTo(SWING_BACKWARD_ANGLE);
+		return true;
+	}
 
-	private boolean setSpeed(String motor, boolean travel, int speed) {
+	private boolean setSpeed(String motor, boolean setTravelSpeed, int speed) {
 		switch (motor) {
 		case "motora":
+			Motor.A.setSpeed(speed);
 			return true;
 		case "motorb":
+			Motor.B.setSpeed(speed);
 			return true;
 		case "motorc":
+			Motor.C.setSpeed(speed);
 			return true;
 		case "drivemotors":
-			if (travel)
+			if (setTravelSpeed)
 				pilot.setTravelSpeed(speed);
 			else
 				pilot.setRotateSpeed(speed);
@@ -190,7 +210,8 @@ public class Driver {
 					return true;
 				}
 			}
-		} else {
+		} 
+		else {
 			if (right) {
 				if (distance == 0 && radius == 0) {
 					pilot.arcBackward(-DEFAULT_RADIUS);
@@ -233,8 +254,8 @@ public class Driver {
 	}
 
 	private boolean stop() {
-		DRIVING = false;
 		pilot.stop();
+		DRIVING = false;
 		return true;
 	}
 
@@ -267,5 +288,4 @@ public class Driver {
 		}
 		return returnList;
 	}
-
 }

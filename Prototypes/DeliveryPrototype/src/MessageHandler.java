@@ -4,7 +4,7 @@ public class MessageHandler {
 	static final int MESSAGE_LENGTH = 10;
 
 	public MessageHandler() {
-		
+
 	}
 
 	public String createACK() {
@@ -44,7 +44,7 @@ public class MessageHandler {
 			return "";
 	}
 
-	//utility method to determine whether a String is a number
+	// utility method to determine whether a String is a number
 	private boolean isNumeric(String number) {
 		try {
 			int i = Integer.parseInt(number);
@@ -87,7 +87,7 @@ public class MessageHandler {
 		ret = new String(checksum);
 		return ret;
 	}
-	
+
 	public ArrayList<String> decodeMessage(String message) {
 		ArrayList<String> commandData = new ArrayList<String>();
 		if (message.length() != 11) {
@@ -121,7 +121,7 @@ public class MessageHandler {
 					commandData.add("exit");
 					return commandData;
 				case "DM":
-					commandData = decodeDebugMode(params);
+					commandData = decodeDebugMessage(params);
 					return commandData;
 				default:
 					return new ArrayList<String>();
@@ -132,7 +132,6 @@ public class MessageHandler {
 		}
 		return new ArrayList<String>();
 	}
-
 
 	private ArrayList<String> decodeMoveStraight(String parameters) {
 		ArrayList<String> commandData = new ArrayList<String>();
@@ -297,23 +296,126 @@ public class MessageHandler {
 		return commandData;
 	}
 
-	private ArrayList<String> decodeDebugMode(String parameters) {
+	private ArrayList<String> decodeDebugMessage(String parameters) {
 		String debugCommand = parameters.substring(0, 2);
 		ArrayList<String> commandData = new ArrayList<String>();
 		switch (debugCommand) {
 		case "SM":
-			commandData.add("mode");
-			int modeValue = Integer.parseInt(parameters.substring(2));
-			switch (modeValue) {
-			case 0:
-				commandData.add("false");
+			commandData = decodeDebugMode(parameters.substring(2));
+			break;
+		case "SB":
+			commandData = decodeSetBreakpointMessage(parameters.substring(2));
+			break;
+		default:
+			return new ArrayList<String>();
+		}
+		return commandData;
+	}
+
+	private ArrayList<String> decodeDebugMode(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("mode");
+		int modeValue = Integer.parseInt(parameters);
+		switch (modeValue) {
+		case 0:
+			commandData.add("false");
+			break;
+		case 1:
+			commandData.add("true");
+			break;
+		default:
+			return new ArrayList<String>();
+		}
+		return commandData;
+	}
+
+	private ArrayList<String> decodeSetBreakpointMessage(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("breakpoint");
+		String breakpointMethod = parameters.substring(0, 2);
+		switch (breakpointMethod) {
+		case "MV":
+			commandData.add("move");
+			switch (parameters.substring(2, 3)) {
+			case "0":
 				break;
-			case 1:
-				commandData.add("true");
+			case "F":
+				commandData.add("forward");
+				break;
+			case "B":
+				commandData.add("backward");
 				break;
 			default:
 				return new ArrayList<String>();
 			}
+			break;
+		case "MA":
+			commandData.add("arc");
+			switch (parameters.substring(2, 3)) {
+			case "F":
+				commandData.add("forward");
+				break;
+			case "B":
+				commandData.add("backward");
+				break;
+			default:
+				return new ArrayList<String>();
+			}
+			switch (parameters.substring(3, 4)) {
+			case "R":
+				commandData.add("right");
+				break;
+			case "L":
+				commandData.add("left");
+				break;
+			default:
+				return new ArrayList<String>();
+			}
+			break;
+		case "SS":
+			commandData.add("speed");
+			break;
+		case "RS":
+			commandData.add("sensor");
+			switch (parameters.substring(2, 3)) {
+			case "T":
+				commandData.add("touch");
+				break;
+			case "U":
+				commandData.add("ultrasonic");
+				break;
+			case "M":
+				commandData.add("microphone");
+				break;
+			case "L":
+				commandData.add("light");
+				break;
+			default:
+				return new ArrayList<String>();
+			}
+			break;
+		case "TN":
+			commandData.add("turn");
+			switch (parameters.substring(2, 3)) {
+			case "R":
+				commandData.add("right");
+				break;
+			case "":
+				commandData.add("left");
+				break;
+			default:
+				return new ArrayList<String>();
+			}
+			break;
+		default:
+			return new ArrayList<String>();
+		}
+		switch (parameters.substring(parameters.length() - 1)) {
+		case "1":
+			commandData.add("true");
+			break;
+		case "0":
+			commandData.add("false");
 			break;
 		default:
 			return new ArrayList<String>();
