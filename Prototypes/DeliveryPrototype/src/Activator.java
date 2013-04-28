@@ -122,7 +122,6 @@ public class Activator extends Object {
 					public void timedOut() {
 						timer.stop();
 						sendMessage(lastMessage);
-						
 					}
 				
 				});

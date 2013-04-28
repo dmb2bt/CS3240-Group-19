@@ -1,10 +1,8 @@
 //CS3240g8b
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Scanner;
 
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommException;
@@ -12,12 +10,6 @@ import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 
 public class Debugger {
-	/**move bp
-	 * arc bp
-	 * setspeed bp
-	 * readSensor bp
-	 */
-	
 	
 	private static DebuggerShell shell;
 	private boolean isConnected;
@@ -512,7 +504,6 @@ public class Debugger {
 			message = addPaddingZeros(message, "0");
 		}
 		message += getCheckSum(message);
-		shell.printMessage("Message Length: " + message.length());
 		return message;
 	}
 
