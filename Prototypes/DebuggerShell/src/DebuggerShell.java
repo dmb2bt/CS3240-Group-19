@@ -195,7 +195,7 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		textField.requestFocusInWindow();
 	}
 	
-	public void set(String sensor, int value){
+	public void setSensorValue(String sensor, int value){
 		switch(sensor){
 		case "U":
 			txtUltrasonicUnread.setText("Ultrasonic: " + value);

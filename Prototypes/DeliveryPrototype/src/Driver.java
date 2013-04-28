@@ -13,16 +13,21 @@ import lejos.robotics.navigation.DifferentialPilot;
 
 public class Driver {
 	private DifferentialPilot pilot;
-	final int DEFAULT_RADIUS = 90;
-	final int FORWARD_ANGLE = 1;
-	final int BACKWARD_ANGLE = -1;
-	final int COMMAND_TYPE_INDEX = 0;
-	final int PARAMETER1_INDEX = 1;
-	final int PARAMETER2_INDEX = 2;
-	final int PARAMETER3_INDEX = 3;
-	final int PARAMETER4_INDEX = 4;
-	final int SAFEDISTANCE = 50;
-	final int SOUNDTHRESHOLD = 50;
+	private final int DEFAULT_RADIUS = 90;
+	private final int FORWARD_ANGLE = 1;
+	private final int BACKWARD_ANGLE = -1;
+	private final int COMMAND_TYPE_INDEX = 0;
+	private final int PARAMETER1_INDEX = 1;
+	private final int PARAMETER2_INDEX = 2;
+	private final int PARAMETER3_INDEX = 3;
+	private final int PARAMETER4_INDEX = 4;
+	private final int SAFEDISTANCE = 50;
+	private final int SOUNDTHRESHOLD = 85;
+	private final int INITIAL_ROTATE_SPEED = 90;
+	private final int SWING_FORWARD_ANGLE = 90;
+	private final int SWING_BACKWARD_ANGLE = -90;
+	private final double WHEEL_DIAMETER = 2.25f;
+	private final double TRACK_WIDTH = 5.5f;
 	private boolean DRIVING = false;
 	private boolean hasStopped = false;
 	private boolean moveBreakpoint = false;
@@ -44,6 +49,7 @@ public class Driver {
 	private boolean turnBreakpoint = false;
 	private boolean turnRightBreakpoint = false;
 	private boolean turnLeftBreakpoint = false;
+	private boolean swingBreakpoint = false;
 
 	private TouchSensor touchSensor;
 	private UltrasonicSensor ultrasonicSensor;
@@ -51,8 +57,10 @@ public class Driver {
 	private SoundSensor soundSensor;
 
 	public Driver() {
-		pilot = new DifferentialPilot(2.25f, 5.5f, Motor.B, Motor.C);
-		pilot.setRotateSpeed(90);
+		pilot = new DifferentialPilot(WHEEL_DIAMETER, TRACK_WIDTH, Motor.B,
+				Motor.C);
+		pilot.setRotateSpeed(INITIAL_ROTATE_SPEED);
+		Motor.A.setSpeed(INITIAL_ROTATE_SPEED);
 
 		touchSensor = new TouchSensor(SensorPort.S1);
 		ultrasonicSensor = new UltrasonicSensor(SensorPort.S2);
@@ -89,7 +97,7 @@ public class Driver {
 	}
 
 	public ArrayList<String> implementCommand(ArrayList<String> command) {
-		boolean forward, right, travel;
+		boolean forward, right, setTravelSpeed;
 		int radius, distance, speed;
 		String sensor, motor;
 		switch (command.get(COMMAND_TYPE_INDEX)) {
@@ -135,11 +143,14 @@ public class Driver {
 		case "setspeed":
 			motor = command.get(PARAMETER1_INDEX);
 			if (command.get(PARAMETER2_INDEX).equalsIgnoreCase("travel"))
-				travel = true;
+				setTravelSpeed = true;
 			else
-				travel = false;
+				setTravelSpeed = false;
 			speed = Integer.parseInt(command.get(PARAMETER2_INDEX));
-			setSpeed(motor, travel, speed);
+			setSpeed(motor, setTravelSpeed, speed);
+			return new ArrayList<String>();
+		case "swing":
+			swing();
 			return new ArrayList<String>();
 		case "breakpoint":
 			implementBreakpoint(command);
@@ -150,20 +161,23 @@ public class Driver {
 
 	}
 
-	private boolean setSpeed(String motor, boolean travel, int speed) {
+	private boolean setSpeed(String motor, boolean setTravelSpeed, int speed) {
 		if (setspeedBreakpoint) {
 			System.out.println("Hit Breakpoint");
 			Button.ENTER.waitForPressAndRelease();
 		}
 		switch (motor) {
 		case "motora":
+			Motor.A.setSpeed(speed);
 			return true;
 		case "motorb":
+			Motor.B.setSpeed(speed);
 			return true;
 		case "motorc":
+			Motor.C.setSpeed(speed);
 			return true;
 		case "drivemotors":
-			if (travel)
+			if (setTravelSpeed)
 				pilot.setTravelSpeed(speed);
 			else
 				pilot.setRotateSpeed(speed);
@@ -172,6 +186,16 @@ public class Driver {
 		default:
 			return false;
 		}
+	}
+
+	private boolean swing() {
+		if(swingBreakpoint){
+			System.out.println("Hit Breakpoint");
+			Button.ENTER.waitForPressAndRelease();
+		}
+		Motor.A.rotateTo(SWING_FORWARD_ANGLE);
+		Motor.A.rotateTo(SWING_BACKWARD_ANGLE);
+		return true;
 	}
 
 	private boolean moveStraight(boolean forward, int distance) {
@@ -311,8 +335,8 @@ public class Driver {
 	}
 
 	private boolean stop() {
-		DRIVING = false;
 		pilot.stop();
+		DRIVING = false;
 		return true;
 	}
 
@@ -368,7 +392,8 @@ public class Driver {
 
 	private void implementBreakpoint(ArrayList<String> command) {
 		boolean breakpointValue;
-		switch (command.get(command.size() - 1)) {
+		int lastIndex = command.size() - 1;
+		switch (command.get(lastIndex)) {
 		case "true":
 			breakpointValue = true;
 			break;
@@ -377,10 +402,10 @@ public class Driver {
 			break;
 		}
 		if (command.size() > 2) {
-			switch (command.get(1)) {
+			switch (command.get(PARAMETER1_INDEX)) {
 			case "move":
 				if (command.size() > 3) {
-					switch (command.get(2)) {
+					switch (command.get(PARAMETER2_INDEX)) {
 					case "forward":
 						moveForwardBreakpoint = breakpointValue;
 						break;
@@ -396,10 +421,10 @@ public class Driver {
 				break;
 			case "arc":
 				if (command.size() > 3) {
-					switch (command.get(2)) {
+					switch (command.get(PARAMETER2_INDEX)) {
 					case "forward":
 						if (command.size() > 4) {
-							switch (command.get(3)) {
+							switch (command.get(PARAMETER3_INDEX)) {
 							case "right":
 								arcForwardRightBreakpoint = breakpointValue;
 								break;
@@ -415,7 +440,7 @@ public class Driver {
 						break;
 					case "backward":
 						if (command.size() > 4) {
-							switch (command.get(3)) {
+							switch (command.get(PARAMETER3_INDEX)) {
 							case "right":
 								arcBackwardRightBreakpoint = breakpointValue;
 								break;
@@ -435,7 +460,7 @@ public class Driver {
 				}
 			case "turn":
 				if (command.size() > 3) {
-					switch (command.get(2)) {
+					switch (command.get(PARAMETER2_INDEX)) {
 					case "right":
 						turnRightBreakpoint = breakpointValue;
 						break;
@@ -452,9 +477,9 @@ public class Driver {
 			case "speed":
 				setspeedBreakpoint = breakpointValue;
 				break;
-			case "read":
+			case "sensor":
 				if (command.size() > 3) {
-					switch (command.get(2)) {
+					switch (command.get(PARAMETER2_INDEX)) {
 					case "touch":
 						readSensorTouchBreakpoint = breakpointValue;
 						break;
@@ -473,6 +498,9 @@ public class Driver {
 					break;
 				}
 				readSensorBreakpoint = breakpointValue;
+				break;
+			case "swing":
+				swingBreakpoint = breakpointValue;
 				break;
 			default:
 				break;

@@ -1,7 +1,14 @@
 import java.util.ArrayList;
 
 public class MessageHandler {
-	static final int MESSAGE_LENGTH = 10;
+	static final int MESSAGE_LENGTH = 11;
+	static final int COMMAND_LENGTH = 10;
+	static final int CHECKSUM_INDEX = 10;
+	static final int START_INDEX = 0;
+	static final int COMMAND_TYPE_END_INDEX = 2;
+	static final int SENSOR_TYPE_INDEX = 0;
+	static final int SENSOR_VALUE_INDEX = 1;
+	static final int SENSOR_DATA_SIZE = 2;
 
 	public MessageHandler() {
 
@@ -15,10 +22,10 @@ public class MessageHandler {
 	}
 
 	public String encodeMessage(ArrayList<String> messageData) {
-		if (messageData.size() > 1) {
+		if (messageData.size() == SENSOR_DATA_SIZE) {
 			String encoded = "SD";
-			String value = messageData.get(1);
-			switch (messageData.get(0)) {
+			String value = messageData.get(SENSOR_VALUE_INDEX);
+			switch (messageData.get(SENSOR_TYPE_INDEX)) {
 			case "touch":
 				encoded += "T";
 				break;
@@ -54,11 +61,22 @@ public class MessageHandler {
 		return true;
 	}
 
+	// utility method to determine whether the parameters is empty space by
+	// communications protocol
+	private boolean isEmptyZeros(String parameters) {
+		if (Integer.parseInt(parameters) == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	private boolean verifyChecksum(String message) {
-		if (message.length() == 11) {
+		if (message.length() == MESSAGE_LENGTH) {
 			byte[] string = message.getBytes();
-			if (getChecksum(message.substring(0, 10)).equals(
-					message.substring(10))) {
+			System.out.println("Checksum: " + message.substring(CHECKSUM_INDEX));
+			if (getChecksum(message.substring(START_INDEX, COMMAND_LENGTH))
+					.equals(message.substring(CHECKSUM_INDEX))) {
 				return true;
 			}
 		}
@@ -83,19 +101,22 @@ public class MessageHandler {
 		}
 		sum = sum % 256;
 		byte[] checksum = new byte[1];
-		checksum[0] = (byte) sum;
+		checksum[START_INDEX] = (byte) sum;
 		ret = new String(checksum);
+		System.out.println("Calc Checksum: " + ret);
 		return ret;
 	}
 
 	public ArrayList<String> decodeMessage(String message) {
 		ArrayList<String> commandData = new ArrayList<String>();
-		if (message.length() != 11) {
+		if (message.length() != MESSAGE_LENGTH) {
 			return commandData;
 		} else {
 			if (verifyChecksum(message)) {
-				String command = message.substring(0, 2);
-				String params = message.substring(2, 10);
+				String command = message.substring(START_INDEX,
+						COMMAND_TYPE_END_INDEX);
+				String params = message.substring(COMMAND_TYPE_END_INDEX,
+						COMMAND_LENGTH);
 				switch (command) {
 				case "MS":
 					commandData = decodeMoveStraight(params);
@@ -117,6 +138,8 @@ public class MessageHandler {
 					return commandData;
 				case "RA":
 					break;
+				case "SW":
+					commandData = decodeSwing(params);
 				case "EC":
 					commandData.add("exit");
 					return commandData;
@@ -183,8 +206,7 @@ public class MessageHandler {
 	private ArrayList<String> decodeStop(String parameters) {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("stop");
-		String params = parameters.substring(0);
-		if (!(isNumeric(params) && Integer.parseInt(params) == 0)) {
+		if (!(isNumeric(parameters) && isEmptyZeros(parameters))) {
 			return new ArrayList<String>();
 		}
 		return commandData;
@@ -296,15 +318,27 @@ public class MessageHandler {
 		return commandData;
 	}
 
+	private ArrayList<String> decodeSwing(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("swing");
+		if (!(isNumeric(parameters) && isEmptyZeros(parameters))) {
+			return new ArrayList<String>();
+		}
+		return commandData;
+	}
+
 	private ArrayList<String> decodeDebugMessage(String parameters) {
-		String debugCommand = parameters.substring(0, 2);
+		String debugCommand = parameters.substring(START_INDEX,
+				COMMAND_TYPE_END_INDEX);
 		ArrayList<String> commandData = new ArrayList<String>();
 		switch (debugCommand) {
 		case "SM":
-			commandData = decodeDebugMode(parameters.substring(2));
+			commandData = decodeDebugMode(parameters
+					.substring(COMMAND_TYPE_END_INDEX));
 			break;
 		case "SB":
-			commandData = decodeSetBreakpointMessage(parameters.substring(2));
+			commandData = decodeSetBreakpointMessage(parameters
+					.substring(COMMAND_TYPE_END_INDEX));
 			break;
 		default:
 			return new ArrayList<String>();
@@ -332,11 +366,12 @@ public class MessageHandler {
 	private ArrayList<String> decodeSetBreakpointMessage(String parameters) {
 		ArrayList<String> commandData = new ArrayList<String>();
 		commandData.add("breakpoint");
-		String breakpointMethod = parameters.substring(0, 2);
+		String breakpointMethod = parameters.substring(START_INDEX,
+				COMMAND_TYPE_END_INDEX);
 		switch (breakpointMethod) {
 		case "MV":
 			commandData.add("move");
-			switch (parameters.substring(2, 3)) {
+			switch (parameters.substring(COMMAND_TYPE_END_INDEX, 3)) {
 			case "0":
 				break;
 			case "F":
@@ -351,12 +386,14 @@ public class MessageHandler {
 			break;
 		case "MA":
 			commandData.add("arc");
-			switch (parameters.substring(2, 3)) {
+			switch (parameters.substring(COMMAND_TYPE_END_INDEX, 3)) {
 			case "F":
 				commandData.add("forward");
 				break;
 			case "B":
 				commandData.add("backward");
+				break;
+			case "0":
 				break;
 			default:
 				return new ArrayList<String>();
@@ -368,6 +405,8 @@ public class MessageHandler {
 			case "L":
 				commandData.add("left");
 				break;
+			case "0":
+				break;
 			default:
 				return new ArrayList<String>();
 			}
@@ -377,7 +416,7 @@ public class MessageHandler {
 			break;
 		case "RS":
 			commandData.add("sensor");
-			switch (parameters.substring(2, 3)) {
+			switch (parameters.substring(COMMAND_TYPE_END_INDEX, 3)) {
 			case "T":
 				commandData.add("touch");
 				break;
@@ -390,22 +429,29 @@ public class MessageHandler {
 			case "L":
 				commandData.add("light");
 				break;
+			case "0":
+				break;
 			default:
 				return new ArrayList<String>();
 			}
 			break;
 		case "TN":
 			commandData.add("turn");
-			switch (parameters.substring(2, 3)) {
+			switch (parameters.substring(COMMAND_TYPE_END_INDEX, 3)) {
 			case "R":
 				commandData.add("right");
 				break;
-			case "":
+			case "L":
 				commandData.add("left");
+				break;
+			case "0":
 				break;
 			default:
 				return new ArrayList<String>();
 			}
+			break;
+		case "SW":
+			commandData.add("swing");
 			break;
 		default:
 			return new ArrayList<String>();

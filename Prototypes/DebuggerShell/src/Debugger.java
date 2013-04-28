@@ -21,6 +21,8 @@ public class Debugger {
 	private static NXTInfo[] info;
 	private static long start;
 	private static long latency;
+
+	final static int MESSAGE_LENGTH = 11;
 	final static int DATA_START = 2;
 	final static int NXT_PIN = 1234;
 	final static int COMMAND_PARAMETER = 0;
@@ -52,17 +54,17 @@ public class Debugger {
 					while (true) {
 						int count = iHandle.read(buffer);
 						if (count > 0) {
-							String input = (new String(buffer))
-									.substring(0, 11);
+							String input = (new String(buffer)).substring(0,
+									MESSAGE_LENGTH);
 							shell.printRobotMessage("Message from robot: "
 									+ input);
 
-							shell.set(input.charAt(DATA_START) + "",
+							shell.setSensorValue(input.charAt(DATA_START) + "",
 									Integer.parseInt(input.substring(3, 10)));
 						}
 					}
 				} catch (Exception e) {
-					System.out.println("read error");
+					shell.printMessage("Error Reading from Robot");
 				}
 			}
 		};
@@ -175,9 +177,11 @@ public class Debugger {
 				+ " \n\nSET SPEED: Type: 'setspeed [specify: a, b, c, or d, representing motor a, b, c, or drive] [t or r for type of speed] [number of new speed].\nFor example to set motor a to speed 30 type: setspeed a 30"
 				+ " \n\nREAD: Type: 'read [specify: u, t, m, l, or all, for ultrasonic, touch, microphone, light, or all sensor information respectively].  \nFor example to read information from the light sensor type: read l.  \nTo read information from all sensors type: read all"
 				+ " \n\nNONE: To create NoOp message type: none"
-				+ " \n\nSWING: Type: 'swing'";
+				+ " \n\nSWING: Type: 'swing'"
+				+ " \n\nBREAKPOINTS: Type: setbreakpoint or removebreakpoint followed by: "
+				+ " \n\t [move, arc, read, setspeed, swing] optionally add arguments for those methods ";
 	}
-	
+
 	public void runCommand(String command) {
 		if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("?")) {
 			shell.printMessage(getCommandHelp());
@@ -191,7 +195,7 @@ public class Debugger {
 		}
 
 	}
-	
+
 	private static String addPaddingZeros(String command, String endOfCommand) {
 		for (int i = command.length() - 1; i < 9 - endOfCommand.length(); i++) {
 			command += "0";
@@ -346,7 +350,7 @@ public class Debugger {
 	public static String createStopMessage() {
 		return addTrailingZeros("ST");
 	}
-	
+
 	public static String createSwingMessage() {
 		return addTrailingZeros("SW");
 	}
@@ -484,6 +488,9 @@ public class Debugger {
 					}
 				}
 				break;
+			case "swing":
+				message += "SW";
+				break;
 			}
 		}
 		if (value) {
@@ -495,7 +502,7 @@ public class Debugger {
 		shell.printMessage("Message Length: " + message.length());
 		return message;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		Debugger d = new Debugger();
 	}

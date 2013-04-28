@@ -41,9 +41,9 @@ public class Activator extends Object {
 		(new Thread() {
 			public void run() {
 				while (true) {
-					ArrayList<String> sensorData2 = driver.safetySense();
-					if (sensorData2.size() > 1) {
-						sendMessage(messageHandler.encodeMessage(sensorData2));
+					ArrayList<String> sensorData = driver.safetySense();
+					if (sensorData.size() > 1) {
+						sendMessage(messageHandler.encodeMessage(sensorData));
 					}
 				}
 			}
@@ -59,8 +59,9 @@ public class Activator extends Object {
 							.decodeMessage(input);
 					storedCommands.push(commandDataIn);
 					if (hasReceivedAck) {
-						while(!storedCommands.isEmpty()){
-							ArrayList<String> commandData = (ArrayList<String>) storedCommands.pop();
+						while (!storedCommands.isEmpty()) {
+							ArrayList<String> commandData = (ArrayList<String>) storedCommands
+									.pop();
 							if (commandData.size() < 1) {
 								System.out.println("Invalid Message");
 							} else {
@@ -107,16 +108,16 @@ public class Activator extends Object {
 		try {
 			System.out.println("Send Message");
 			System.out.println(message);
-			if (!message.equals(messageHandler.createACK())) {
-				hasReceivedAck = false;
-				timer = new Timer(30000, new TimerListener() {
-					@Override
-					public void timedOut() {
-						timer.stop();
-						sendMessage(message);
-					}
-				});
-			}
+			// if (!message.equals(messageHandler.createACK())) {
+			// hasReceivedAck = false;
+			// timer = new Timer(30000, new TimerListener() {
+			//
+			// public void timedOut() {
+			// timer.stop();
+			// sendMessage(message);
+			// }
+			// });
+			// }
 			writePipe.write(message.getBytes());
 			writePipe.flush();
 		} catch (IOException e) {
