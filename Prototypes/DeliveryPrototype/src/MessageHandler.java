@@ -60,6 +60,11 @@ public class MessageHandler {
 		}
 		return true;
 	}
+	
+	public boolean isAck(String message){
+		if(message.length() < 2) return false;
+		else return message.charAt(0) == 'A' && message.charAt(1) == 'K';
+	}
 
 	// utility method to determine whether the parameters is empty space by
 	// communications protocol

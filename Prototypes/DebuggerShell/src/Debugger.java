@@ -12,6 +12,13 @@ import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 
 public class Debugger {
+	/**move bp
+	 * arc bp
+	 * setspeed bp
+	 * readSensor bp
+	 */
+	
+	
 	private static DebuggerShell shell;
 	private boolean isConnected;
 	private Thread readThread;
@@ -61,6 +68,9 @@ public class Debugger {
 
 							shell.setSensorValue(input.charAt(DATA_START) + "",
 									Integer.parseInt(input.substring(3, 10)));
+							if(!input.contains("AK00000000")){ 
+						//		sendMessage("AK00000000");
+							}
 						}
 					}
 				} catch (Exception e) {

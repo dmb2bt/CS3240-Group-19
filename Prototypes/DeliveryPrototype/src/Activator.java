@@ -2,7 +2,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Queue;
 
 import lejos.nxt.comm.Bluetooth;
 import lejos.nxt.comm.NXTConnection;
@@ -15,6 +14,8 @@ public class Activator extends Object {
 	private static boolean debugMode = false;
 	private static boolean usbTest = false;
 	private static boolean hasReceivedAck = true;
+	
+	private static String lastMessage = "";
 
 	private static NXTConnection connection;
 	private static byte[] buffer = new byte[256];
@@ -23,7 +24,7 @@ public class Activator extends Object {
 	private static Driver driver;
 	private static MessageHandler messageHandler;
 	private static Timer timer;
-	private static Queue<ArrayList<String>> storedCommands;
+	private static ArrayList<ArrayList<String>> storedCommands;
 
 	public static void main(String[] args) {
 		boolean connected = false;
@@ -35,7 +36,7 @@ public class Activator extends Object {
 		messageHandler = new MessageHandler();
 		readPipe = connection.openDataInputStream();
 		writePipe = connection.openDataOutputStream();
-		storedCommands = new Queue<ArrayList<String>>();
+		storedCommands = new ArrayList<ArrayList<String>>();
 		String input = "";
 
 		(new Thread() {
@@ -54,14 +55,16 @@ public class Activator extends Object {
 				int count = readPipe.read(buffer);
 				if (count > 0) {
 					input = (new String(buffer)).substring(0, 11);
-					System.out.println(input);
 					ArrayList<String> commandDataIn = messageHandler
 							.decodeMessage(input);
-					storedCommands.push(commandDataIn);
+					if(messageHandler.isAck(input)){
+						hasReceivedAck = true;
+						if(timer != null) timer.stop();
+					} else storedCommands.add(commandDataIn);
 					if (hasReceivedAck) {
-						while (!storedCommands.isEmpty()) {
-							ArrayList<String> commandData = (ArrayList<String>) storedCommands
-									.pop();
+
+						while(storedCommands.size() != 0){
+							ArrayList<String> commandData = storedCommands.remove(0);
 							if (commandData.size() < 1) {
 								System.out.println("Invalid Message");
 							} else {
@@ -79,7 +82,7 @@ public class Activator extends Object {
 										.encodeMessage(sensorData));
 							}
 						}
-						storedCommands = new Queue<ArrayList<String>>();
+						storedCommands = new ArrayList<ArrayList<String>>();
 					}
 				}
 				Thread.sleep(10);
@@ -104,23 +107,31 @@ public class Activator extends Object {
 		return false;
 	}
 
-	public static void sendMessage(final String message) {
+	public static void sendMessage(String message) {
 		try {
 			System.out.println("Send Message");
 			System.out.println(message);
-			// if (!message.equals(messageHandler.createACK())) {
-			// hasReceivedAck = false;
-			// timer = new Timer(30000, new TimerListener() {
-			//
-			// public void timedOut() {
-			// timer.stop();
-			// sendMessage(message);
-			// }
-			// });
-			// }
+			
+			lastMessage = message;
+			if (!messageHandler.isAck(message)) {
+				System.out.println("here");
+				hasReceivedAck = false;
+				timer = new Timer(10000, new TimerListener(){
+
+					@Override
+					public void timedOut() {
+						// TODO Auto-generated method stub
+						timer.stop();
+						sendMessage(lastMessage);
+						
+					}
+				
+				});
+				timer.start();
+			}
 			writePipe.write(message.getBytes());
 			writePipe.flush();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.out.println("Write error: " + e);
 		}
 	}
