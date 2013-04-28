@@ -69,7 +69,7 @@ public class Debugger {
 							shell.setSensorValue(input.charAt(DATA_START) + "",
 									Integer.parseInt(input.substring(3, 10)));
 							if(!input.contains("AK00000000")){ 
-						//		sendMessage("AK00000000");
+								sendMessage("AK00000000");
 							}
 						}
 					}
@@ -233,7 +233,10 @@ public class Debugger {
 		if (cmdWords.length < ONLY_COMMAND_LENGTH) {
 			return message;
 		} else {
-			if (command.equalsIgnoreCase("move")) {
+			if(command.equalsIgnoreCase("ack")){
+				message = "AK00000000";
+			}
+			else if (command.equalsIgnoreCase("move")) {
 				message = createMoveMessage(args);
 			} else if (command.equalsIgnoreCase("arc")) {
 				message = createArcMessage(args);

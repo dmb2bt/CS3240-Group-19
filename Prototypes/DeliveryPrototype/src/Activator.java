@@ -120,7 +120,6 @@ public class Activator extends Object {
 
 					@Override
 					public void timedOut() {
-						// TODO Auto-generated method stub
 						timer.stop();
 						sendMessage(lastMessage);
 						
@@ -132,7 +131,7 @@ public class Activator extends Object {
 			writePipe.write(message.getBytes());
 			writePipe.flush();
 		} catch (Exception e) {
-			System.out.println("Write error: " + e);
+			System.out.println("Write error: " + e.getMessage());
 		}
 	}
 

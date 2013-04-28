@@ -48,6 +48,9 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 	
 	private ArrayList<Point> commandFormat;
 	private ArrayList<Point> messageFormat;
+	
+	private ArrayList<String> storedCommands;
+	private int commandIndex;
 
 	private JTextField textField;
 	private JTextField textField_1;
@@ -61,6 +64,8 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		this.debugger = d;
 		
 		f = new JFrame();
+		commandIndex = 0;
+		storedCommands = new ArrayList<String>();
 		commandFormat = new ArrayList<Point>();
 		messageFormat = new ArrayList<Point>();
 		
@@ -87,13 +92,13 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		
 		JButton btnLeft = new JButton("Left");
 		btnLeft.addMouseListener(this);
-		btnLeft.setBounds(516, 460, 89, 25);
+		btnLeft.setBounds(516, 460, 59, 25);
 		f.getContentPane().add(btnLeft);
 		btnLeft.addActionListener(this);
 		
 		JButton btnRight = new JButton("Right");
 		btnRight.addMouseListener(this);
-		btnRight.setBounds(617, 460, 90, 25);
+		btnRight.setBounds(638, 460, 69, 25);
 		f.getContentPane().add(btnRight);
 		btnRight.addActionListener(this);
 		
@@ -184,6 +189,30 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		JLabel lblMovement = new JLabel("Movement");
 		lblMovement.setBounds(516, 393, 89, 16);
 		f.getContentPane().add(lblMovement);
+		
+		JButton btnSetMoveBreakpoint = new JButton("Set Move Breakpoint");
+		btnSetMoveBreakpoint.setBounds(516, 281, 191, 25);
+		f.getContentPane().add(btnSetMoveBreakpoint);
+		
+		JButton btnSetArcBreakpoint = new JButton("Set Arc Breakpoint");
+		btnSetArcBreakpoint.setBounds(516, 303, 191, 25);
+		f.getContentPane().add(btnSetArcBreakpoint);
+		
+		JButton btnSetSetspeedBreakpoint = new JButton("Set Speed Breakpoint");
+		btnSetSetspeedBreakpoint.setBounds(516, 327, 191, 25);
+		f.getContentPane().add(btnSetSetspeedBreakpoint);
+		
+		JButton btnSetReadSensor = new JButton("Set Sensor Breakpoint");
+		btnSetReadSensor.setBounds(516, 351, 191, 25);
+		f.getContentPane().add(btnSetReadSensor);
+		
+		JLabel lblBreakpoints = new JLabel("Breakpoints");
+		lblBreakpoints.setBounds(516, 258, 154, 16);
+		f.getContentPane().add(lblBreakpoints);
+		
+		JButton btnSwing = new JButton("Swing");
+		btnSwing.setBounds(571, 460, 69, 25);
+		f.getContentPane().add(btnSwing);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 		f.setSize(737, 584);
@@ -263,6 +292,20 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 			color();
 			
 			debugger.runCommand(command);
+			
+			storedCommands.add(command);
+			commandIndex = storedCommands.size();
+		}
+		else if(arg0.getKeyCode() == 38){
+			commandIndex --;
+			if(commandIndex < 0) commandIndex = 0;
+			textField.setText(storedCommands.get(commandIndex));
+		}else if(arg0.getKeyCode() == 40){
+			commandIndex ++;
+			if(commandIndex >= storedCommands.size()){commandIndex = storedCommands.size();
+				textField.setText("");
+			}
+			else textField.setText(storedCommands.get(commandIndex));
 		}
 	}
 
