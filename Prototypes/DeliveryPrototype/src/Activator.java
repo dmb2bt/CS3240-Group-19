@@ -13,9 +13,6 @@ public class Activator extends Object {
 
 	private static boolean debugMode = false;
 	private static boolean usbTest = false;
-	private static boolean hasReceivedAck = true;
-	
-	private static String lastMessage = "";
 
 	private static NXTConnection connection;
 	private static byte[] buffer = new byte[256];
@@ -23,7 +20,6 @@ public class Activator extends Object {
 	private static DataOutputStream writePipe;
 	private static Driver driver;
 	private static MessageHandler messageHandler;
-	private static Timer timer;
 	private static ArrayList<ArrayList<String>> storedCommands;
 
 	public static void main(String[] args) {
@@ -55,34 +51,26 @@ public class Activator extends Object {
 				int count = readPipe.read(buffer);
 				if (count > 0) {
 					input = (new String(buffer)).substring(0, 11);
-					ArrayList<String> commandDataIn = messageHandler
-							.decodeMessage(input);
-					if(messageHandler.isAck(input)){
-						hasReceivedAck = true;
-						if(timer != null) timer.stop();
-					} else storedCommands.add(commandDataIn);
-					if (hasReceivedAck) {
+					if (!messageHandler.isAck(input)) {
+						ArrayList<String> commandData = messageHandler
+								.decodeMessage(input);
 
-						while(storedCommands.size() != 0){
-							ArrayList<String> commandData = storedCommands.remove(0);
-							if (commandData.size() < 1) {
-								System.out.println("Invalid Message");
-							} else {
-								sendMessage(messageHandler.createACK());
-							}
-							if (commandData.get(0).equals("exit"))
-								System.exit(0);
-							if (commandData.get(0).equalsIgnoreCase("mode"))
-								debugMode = Boolean.parseBoolean(commandData
-										.get(1));
-							ArrayList<String> sensorData = driver
-									.implementCommand(commandData);
-							if (sensorData.size() > 1) {
-								sendMessage(messageHandler
-										.encodeMessage(sensorData));
-							}
+						if (commandData.size() < 1) {
+							System.out.println("Invalid Message");
+						} else {
+							sendMessage(messageHandler.createACK());
 						}
-						storedCommands = new ArrayList<ArrayList<String>>();
+						if (commandData.get(0).equals("exit"))
+							System.exit(0);
+						if (commandData.get(0).equalsIgnoreCase("mode"))
+							debugMode = Boolean
+									.parseBoolean(commandData.get(1));
+						ArrayList<String> sensorData = driver
+								.implementCommand(commandData);
+						if (sensorData.size() > 1) {
+							sendMessage(messageHandler
+									.encodeMessage(sensorData));
+						}
 					}
 				}
 				Thread.sleep(10);
@@ -111,22 +99,6 @@ public class Activator extends Object {
 		try {
 			System.out.println("Send Message");
 			System.out.println(message);
-			
-			lastMessage = message;
-			if (!messageHandler.isAck(message)) {
-				System.out.println("here");
-				hasReceivedAck = false;
-				timer = new Timer(10000, new TimerListener(){
-
-					@Override
-					public void timedOut() {
-						timer.stop();
-						sendMessage(lastMessage);
-					}
-				
-				});
-				timer.start();
-			}
 			writePipe.write(message.getBytes());
 			writePipe.flush();
 		} catch (Exception e) {

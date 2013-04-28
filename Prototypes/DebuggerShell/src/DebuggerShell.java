@@ -64,6 +64,7 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		this.debugger = d;
 		
 		f = new JFrame();
+		
 		commandIndex = 0;
 		storedCommands = new ArrayList<String>();
 		commandFormat = new ArrayList<Point>();
@@ -213,7 +214,7 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		JLabel lblBreakpoints = new JLabel("Breakpoints");
 		lblBreakpoints.setBounds(516, 258, 154, 16);
 		f.getContentPane().add(lblBreakpoints);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		f.setVisible(true);
 		f.setSize(737, 584);
 		
