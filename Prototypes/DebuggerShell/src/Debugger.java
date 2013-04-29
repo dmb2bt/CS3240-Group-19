@@ -10,7 +10,7 @@ import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 
 public class Debugger {
-	
+
 	private static DebuggerShell shell;
 	private boolean isConnected;
 	private Thread readThread;
@@ -57,10 +57,16 @@ public class Debugger {
 									MESSAGE_LENGTH);
 							shell.printRobotMessage("Message from robot: "
 									+ input);
+							if (input.substring(0, 2).equalsIgnoreCase("SD")) {
+								shell.setSensorValue(input.charAt(DATA_START)
+										+ "", Integer.parseInt(input.substring(
+										3, 10)));
+							}
+							if (input.substring(0, 2).equalsIgnoreCase("VA")) {
+								shell.printRobotMessage(decodeVariable(input));
+							}
 
-							shell.setSensorValue(input.charAt(DATA_START) + "",
-									Integer.parseInt(input.substring(3, 10)));
-							if(!input.contains("AK00000000")){ 
+							if (!input.contains("AK00000000")) {
 								sendMessage("AK00000000");
 							}
 						}
@@ -181,7 +187,8 @@ public class Debugger {
 				+ " \n\nNONE: To create NoOp message type: none"
 				+ " \n\nSWING: Type: 'swing'"
 				+ " \n\nBREAKPOINTS: Type: setbreakpoint or removebreakpoint followed by: "
-				+ " \n\t [move, arc, read, setspeed, swing] optionally add arguments for those methods ";
+				+ " \n\t [move, arc, read, setspeed, swing] optionally add arguments for those methods "
+				+ " \n\nPRINT VARIABLES: Type: print [drive or swing for which speed] [rotate or travel for speed type]";
 	}
 
 	public void runCommand(String command) {
@@ -225,10 +232,9 @@ public class Debugger {
 		if (cmdWords.length < ONLY_COMMAND_LENGTH) {
 			return message;
 		} else {
-			if(command.equalsIgnoreCase("ack")){
+			if (command.equalsIgnoreCase("ack")) {
 				message = "AK00000000";
-			}
-			else if (command.equalsIgnoreCase("move")) {
+			} else if (command.equalsIgnoreCase("move")) {
 				message = createMoveMessage(args);
 			} else if (command.equalsIgnoreCase("arc")) {
 				message = createArcMessage(args);
@@ -248,6 +254,8 @@ public class Debugger {
 				message = createBreakpointMessage(args, true);
 			} else if (command.equalsIgnoreCase("removebreakpoint")) {
 				message = createBreakpointMessage(args, false);
+			} else if (command.equalsIgnoreCase("print")) {
+				message = createPrintVariableMessage(args);
 			}
 		}
 		return message;
@@ -505,6 +513,61 @@ public class Debugger {
 		}
 		message += getCheckSum(message);
 		return message;
+	}
+
+	private static String createPrintVariableMessage(String[] args) {
+		String message = "DMPV";
+		switch (args[0]) {
+		case "drive":
+			message += "DR";
+			switch (args[1]) {
+			case "rotate":
+				message += "RO";
+				break;
+			case "travel":
+				message += "TR";
+				break;
+			default:
+				return "";
+			}
+			break;
+		case "swing":
+			message += "SW";
+			message += "RO";
+			break;
+		default:
+			return "";
+		}
+		message = addTrailingZeros(message);
+		return message;
+	}
+
+	private String decodeVariable(String message) {
+		String variableString = "";
+		String variable = message.substring(2, 3);
+		String variableType = message.substring(3, 4);
+		switch (variable) {
+		case "D":
+			variableString += "Drive motors ";
+			break;
+		case "S":
+			variableString += "Swing motor ";
+			break;
+		default:
+			return "";
+		}
+		switch (variableType) {
+		case "R":
+			variableString += "rotate speed is ";
+			break;
+		case "T":
+			variableString += "travel speed is ";
+			break;
+		default:
+			return "";
+		}
+		variableString += Integer.parseInt(message.substring(4, 10));
+		return variableString;
 	}
 
 	public static void main(String[] args) throws Exception {

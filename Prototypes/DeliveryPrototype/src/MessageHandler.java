@@ -9,6 +9,7 @@ public class MessageHandler {
 	static final int SENSOR_TYPE_INDEX = 0;
 	static final int SENSOR_VALUE_INDEX = 1;
 	static final int SENSOR_DATA_SIZE = 2;
+	static final int VARIABLE_DATA_SIZE = 3;
 
 	public MessageHandler() {
 
@@ -47,6 +48,34 @@ public class MessageHandler {
 			}
 			encoded += getChecksum(encoded);
 			return encoded;
+		} else if (messageData.size() == VARIABLE_DATA_SIZE) {
+			String encoded = "VA";
+			String speed = messageData.get(2);
+			switch (messageData.get(0)) {
+			case "drive":
+				encoded += "D";
+				break;
+			case "swing":
+				encoded += "S";
+				break;
+			default:
+				return "";
+			}
+			switch (messageData.get(1)) {
+			case "rotate":
+				encoded += "R";
+				break;
+			case "travel":
+				encoded += "T";
+				break;
+			default:
+				return "";
+			}
+			if(isNumeric(speed)){
+				encoded += getPadding(encoded.length(), speed.length()) + speed;
+			}
+			encoded += getChecksum(encoded);
+			return encoded;
 		} else
 			return "";
 	}
@@ -60,10 +89,12 @@ public class MessageHandler {
 		}
 		return true;
 	}
-	
-	public boolean isAck(String message){
-		if(message.length() < 2) return false;
-		else return message.charAt(0) == 'A' && message.charAt(1) == 'K';
+
+	public boolean isAck(String message) {
+		if (message.length() < 2)
+			return false;
+		else
+			return message.charAt(0) == 'A' && message.charAt(1) == 'K';
 	}
 
 	// utility method to determine whether the parameters is empty space by
@@ -79,7 +110,6 @@ public class MessageHandler {
 	private boolean verifyChecksum(String message) {
 		if (message.length() == MESSAGE_LENGTH) {
 			byte[] string = message.getBytes();
-			System.out.println("Checksum: " + message.substring(CHECKSUM_INDEX));
 			if (getChecksum(message.substring(START_INDEX, COMMAND_LENGTH))
 					.equals(message.substring(CHECKSUM_INDEX))) {
 				return true;
@@ -90,7 +120,7 @@ public class MessageHandler {
 
 	private String getPadding(int messageHeadingLength, int messageTailLength) {
 		String returnString = "";
-		for (int i = 0; i < MESSAGE_LENGTH - messageHeadingLength
+		for (int i = 1; i < MESSAGE_LENGTH - messageHeadingLength
 				- messageTailLength; i++) {
 			returnString += "0";
 		}
@@ -108,7 +138,6 @@ public class MessageHandler {
 		byte[] checksum = new byte[1];
 		checksum[START_INDEX] = (byte) sum;
 		ret = new String(checksum);
-		System.out.println("Calc Checksum: " + ret);
 		return ret;
 	}
 
@@ -345,6 +374,10 @@ public class MessageHandler {
 			commandData = decodeSetBreakpointMessage(parameters
 					.substring(COMMAND_TYPE_END_INDEX));
 			break;
+		case "PV":
+			commandData = decodePrintVariableMessage(parameters
+					.substring(COMMAND_TYPE_END_INDEX));
+			break;
 		default:
 			return new ArrayList<String>();
 		}
@@ -472,5 +505,33 @@ public class MessageHandler {
 			return new ArrayList<String>();
 		}
 		return commandData;
+	}
+
+	private ArrayList<String> decodePrintVariableMessage(String parameters) {
+		ArrayList<String> commandData = new ArrayList<String>();
+		commandData.add("variable");
+		String motor = parameters.substring(START_INDEX, 2);
+		switch (motor) {
+		case "DR":
+			commandData.add("drive");
+			String speedType = parameters.substring(2, 4);
+			switch (speedType) {
+			case "TR":
+				commandData.add("travel");
+				break;
+			case "RO":
+				commandData.add("rotate");
+				break;
+			}
+			break;
+		case "SW":
+			commandData.add("swing");
+			commandData.add("rotate");
+			break;
+		default:
+			return new ArrayList<String>();
+		}
+		return commandData;
+
 	}
 }

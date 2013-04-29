@@ -154,6 +154,9 @@ public class Driver {
 			return new ArrayList<String>();
 		case "breakpoint":
 			implementBreakpoint(command);
+			return new ArrayList<String>();
+		case "variable":
+			return implementVariable(command);
 		default:
 			noOp();
 			return new ArrayList<String>();
@@ -189,7 +192,7 @@ public class Driver {
 	}
 
 	private boolean swing() {
-		if(swingBreakpoint){
+		if (swingBreakpoint) {
 			System.out.println("Hit Breakpoint");
 			Button.ENTER.waitForPressAndRelease();
 		}
@@ -506,5 +509,37 @@ public class Driver {
 				break;
 			}
 		}
+	}
+
+	private ArrayList<String> implementVariable(ArrayList<String> command) {
+		ArrayList<String> messageData = new ArrayList<String>();
+		String speed;
+		switch (command.get(PARAMETER1_INDEX)) {
+		case "drive":
+			messageData.add("drive");
+			switch(command.get(PARAMETER2_INDEX)){
+			case "rotate":
+				messageData.add("rotate");
+				speed = Integer.toString((int) pilot.getRotateSpeed());
+				messageData.add(speed);
+				break;
+			case "travel":
+				messageData.add("travel");
+				speed = Integer.toString((int) pilot.getTravelSpeed());
+				messageData.add(speed);
+				break;
+			default:
+				return new ArrayList<String>();
+			}
+			break;
+		case "swing":
+			messageData.add("swing");
+			messageData.add("rotate");
+			messageData.add("" + Motor.C.getSpeed());
+			break;
+		default:
+			return new ArrayList<String>();
+		}
+		return messageData;
 	}
 }

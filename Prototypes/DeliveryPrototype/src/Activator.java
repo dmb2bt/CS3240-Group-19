@@ -52,6 +52,7 @@ public class Activator extends Object {
 				if (count > 0) {
 					input = (new String(buffer)).substring(0, 11);
 					if (!messageHandler.isAck(input)) {
+						System.out.println("Received:\n" + input);
 						ArrayList<String> commandData = messageHandler
 								.decodeMessage(input);
 
