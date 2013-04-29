@@ -72,7 +72,7 @@ public class Debugger {
 						}
 					}
 				} catch (Exception e) {
-					shell.printMessage("Error Reading from Robot");
+					shell.printErrorMessage("Error Reading from Robot");
 				}
 			}
 		};
@@ -120,7 +120,7 @@ public class Debugger {
 					sendMessage("DMSM000001");
 
 				} catch (Exception e) {
-					shell.printMessage("Connection failed to establish.");
+					shell.printErrorMessage("Connection failed to establish.");
 				}
 			}
 		};
@@ -139,7 +139,7 @@ public class Debugger {
 
 	public void sendMessage(String message) {
 		if (!isConnected) {
-			shell.printMessage("Not connected to NXT!");
+			shell.printErrorMessage("Not connected to NXT!");
 			return;
 		}
 		try {
@@ -195,7 +195,7 @@ public class Debugger {
 		if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("?")) {
 			shell.printMessage(getCommandHelp());
 		} else if (!isConnected) {
-			shell.printMessage("Robot is not connected!");
+			shell.printErrorMessage("Not connected to NXT!");
 		} else if (command.equalsIgnoreCase("exit")) {
 			endConnection();
 		} else {

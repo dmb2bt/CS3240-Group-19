@@ -48,6 +48,7 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 	
 	private ArrayList<Point> commandFormat;
 	private ArrayList<Point> messageFormat;
+	private ArrayList<Point> errorFormat;
 	
 	private ArrayList<String> storedCommands;
 	private int commandIndex;
@@ -69,6 +70,7 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		storedCommands = new ArrayList<String>();
 		commandFormat = new ArrayList<Point>();
 		messageFormat = new ArrayList<Point>();
+		errorFormat = new ArrayList<Point>();
 		
 		history = "";
 		
@@ -242,6 +244,12 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		}
 	}
 	
+	public void printErrorMessage(String message){
+		errorFormat.add(new Point(history.length(), message.length()));
+		history += (message + "\n");
+		textPane.setText(history);
+		color();
+	}
 	
 	public void printRobotMessage(String message){
 		messageFormat.add(new Point(history.length(), message.length()));
@@ -263,8 +271,9 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		StyledDocument sDoc = textPane.getStyledDocument();
 		StyleContext sc = StyleContext.getDefaultStyleContext();
 		AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, Color.BLUE);
-		AttributeSet asetM = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, Color.RED);
+		AttributeSet asetM = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, new Color(0,128,0,250));
 		AttributeSet asetT = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, Color.MAGENTA);
+		AttributeSet asetE = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, Color.RED);
 		sDoc.setCharacterAttributes(0, "Debugger Started.".length(), asetT, true);
 		
 		for(Point p: commandFormat){
@@ -272,6 +281,9 @@ public class DebuggerShell implements KeyListener, ActionListener, MouseListener
 		}
 		for(Point p: messageFormat){
 			sDoc.setCharacterAttributes(p.x, p.y, asetM, true);
+		}
+		for(Point p: errorFormat){
+			sDoc.setCharacterAttributes(p.x, p.y, asetE, true);
 		}
 		JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
 		
